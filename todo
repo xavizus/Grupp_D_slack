@@ -1,0 +1,20 @@
+Usage:
+    ctrl+enter = Skapar en checkbox (om du trycker igen, så tas den bort
+    Alt + D // Markerar checkbox som avklarad
+    Alt + C // Markerar checkboxen som avbruten
+    Alt + S // sätter dit att todon är startad.
+
+    ☐  Detta är en checkbox
+    ✔ Detta är en avklarad checkbox @done(19-12-04 13:56)
+    ✘ Detta är en avbruten checkbox @cancelled(19-12-04 13:56)
+    ☐ Detta visar att todon är påbörjad @started(19-12-04 13:57)
+
+    Det finns Tags, @critical @high @low @today 
+
+Rickard:
+    ☐ Något
+Jonas: 
+    ☐ Något annat
+Stephan: 
+    ☐ Något konstigt
+    
