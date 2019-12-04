@@ -15,7 +15,7 @@ if (err) {
   console.log("Not work");
   return
 }else {
-  console.log("Kom in i databas");
+  console.log("kopplad mot databas");
   
   const db = client.db('gruppDDB')
   const collection = db.collection('TESTING');
