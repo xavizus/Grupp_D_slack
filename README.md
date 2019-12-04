@@ -1,6 +1,9 @@
 # Grupp_D_slack
 An backend assignment for building a slack-clone
 
+Trello:
+    https://trello.com/b/eYBYhoAi/grupp-d-tavla
+
 # Node-krav
 - Kunna sätta upp en server
 - Kunna sätta upp routes

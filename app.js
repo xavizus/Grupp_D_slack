@@ -1,7 +1,11 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+// load express
+let express = require('express');
+// load path
+let path = require('path');
+// load cookieparser
+let cookieParser = require('cookie-parser');
+// load morgan (logging)
+let logger = require('morgan');
 
 //Mongo start
 const client = require('mongodb').MongoClient
@@ -34,6 +38,11 @@ if (err) {
 
 //Mongo end
 
+// load route for api
+let apiRouter = require('./routes/api');
+
+// Initialize express
+let app = express();
 
 var app = express();
 let test = "Jonas";
@@ -49,13 +58,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-/* GET home page. */
-app.get('/', function(req, res) {
-  res.render('index', { title: 'Express' });
-});
+// create route for our api
+app.use('/api/v1', apiRouter);
 
 app.get('/profile', function(req, res) {
   res.render('./profile.ejs', {test})
 })
 
+app.get('/login',(request, response)=> {
+  response.render('login',{title: "Discord V2"});
+});
 app.listen(8080);
