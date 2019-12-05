@@ -14,15 +14,14 @@
                 <form action="/login" method="post">
                     <div class="form-group">
                         <label for="email">Email address</label>
-                        <input type="email" class="form-control" id="email" aria-describedby="emailHelp">
+                        <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password">
+                        <input type="password" class="form-control" name="password" id="password">
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary">Sign-in</button> <input type="button" class="btn btn-primary float-right mr-5" value="Create an account">
                 </form>
-                <a href="/newUser"><small>Don't have an account? click here!</small></a>
             </div>
         </div>
     </div>
