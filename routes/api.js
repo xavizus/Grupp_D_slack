@@ -20,6 +20,28 @@ router.get('/', (request, response) => {
     });
 });
 
+router.get('/getPasswordHash/:email', (request, response) => {
+    let email = request.params.email;
+    let responseObject = {
+        response: "OK"
+    };
+
+    let db = request.db;
+
+    let collection = db.get("users");
+
+    collection.find({ "email": email }, { fields: { "password": 1, _id: 0 } }, (err, data) => {
+        if (err) throw err;
+        if (data.length < 1 || data == "") {
+            responseObject.result = false;
+        } else {
+            responseObject.result = data[0].password;
+        }
+        response.send(responseObject);
+    });
+
+})
+
 router.get('/exist/:dataType/:dataToSearch', (request, response) => {
     const allowedTypes = [
         "email",

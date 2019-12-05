@@ -10,6 +10,10 @@ let logger = require('morgan');
 let apiRouter = require('./routes/api');
 // load monk (Database helper)
 let monk = require('monk');
+// load bcrypt
+let bcrypt = require('bcryptjs');
+// load fetch
+const fetch = require("node-fetch");
 // Initialize express
 let app = express();
 
@@ -43,6 +47,25 @@ app.use('/api/v1', apiRouter);
 
 app.get('/login', (request, response) => {
     response.render('login', { title: "Discord V2" });
+});
+
+app.post('/login', (request, response) => {
+    let email = request.body.email;
+
+    let password = request.body.password;
+
+    fetch(`http://localhost:8080/api/v1/getPasswordHash/${email}`)
+        .then((response => response.json()))
+        .then(json => {
+            console.log(json);
+            bcrypt.compare(password, json.result).then(res => {
+                if (res) {
+                    response.send("You have been authenticated");
+                } else {
+                    response.send("You are unauthorized");
+                }
+            });
+        });
 });
 
 app.get('/newUser', (request, response) => {
