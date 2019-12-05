@@ -13,6 +13,10 @@ let monk = require('monk');
 // Initialize express
 let app = express();
 
+let server = require('http').Server(app);
+// load socket for chatrooms
+let io = require('socket.io')(server);
+
 //load environment configs from file .env 
 require('dotenv').config({
     path: __dirname + '/.env'
@@ -58,12 +62,25 @@ app.get('/profile/:name', function(req, res) {
     usersCollection.find({ "username": nameToFind }, {}, (err, data) => {
         console.log(data);
         res.render('./profile.ejs', { "data": data });
-    })
+    });
+});
 
-})
+app.get('/chatroom', function (req, res) {
+    res.render('chatroom');
+    let db = req.db;
+    let collection = db.get('messages');
 
+io.on('connection', function (socket) {
+    socket.on('chat message', function (msg) {
+        collection.insert({
+            'message': msg
+        });
+        io.emit('chat message', msg);
+    });
+});
+});
 
 app.get('/login', (request, response) => {
     response.render('login', { title: "Discord V2" });
 });
-app.listen(8080);
+server.listen(8080);
