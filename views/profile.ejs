@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <% include ./partials/header %>
-    <title>profil</title>
+        <title>profil</title>
 </head>
-<body> <div class="container h-50">
+
+<body>
+    <div class="container h-50">
         <div class="row h-100 justify-content-center align-items-center">
             <div class="col-sm-6">
                 <table>
@@ -14,9 +17,15 @@
                         <th>Delete</th>
                     </tr>
                     <tr>
-                        <td><%= data[0].username %></td>
-                        <td><%= data[0].email %></td>
-                        <td><%= data[0].password %> </td>
+                        <td>
+                            <%= data[0].username %>
+                        </td>
+                        <td>
+                            <%= data[0].email %>
+                        </td>
+                        <td>
+                            <%= data[0].password %>
+                        </td>
                     </tr>
                 </table>
             </div>
@@ -29,6 +38,7 @@
         <!DOCTYPE html>
 
     </div>
-       
+
 </body>
+
 </html>
