@@ -37,7 +37,7 @@ const db = monk(mongoDB_URI);
 let store = new MongoDBStore({
     uri: `mongodb://${mongoDB_URI}`,
     collection: 'clientSessions'
-  });
+});
 
 // view engine setup
 app.use(express.static("views"));
@@ -47,12 +47,14 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({
+    extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // make it possible to use database connection elsewhere.
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     req.db = db;
     next();
 });
@@ -61,22 +63,23 @@ app.use(function(req, res, next) {
 app.use(require('express-session')({
     secret: process.env.SESSION_SECRET,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
     },
     store: store,
     resave: true,
     saveUninitialized: true
-  }));
+}));
 
 // create route for our api
 app.use('/api/v1', apiRouter);
 
 app.get('/login', (request, response) => {
-    if(request.session.authenticated) {
+    if (request.session.authenticated) {
         response.send("You are already authenticated!");
-    }
-    else {
-        response.render('login', { title: "Discord V2" });
+    } else {
+        response.render('login', {
+            title: "Discord V2"
+        });
     }
 });
 
@@ -88,7 +91,7 @@ app.post('/login', (request, response) => {
     fetch(`http://localhost:8080/api/v1/getPasswordHash/${email}`)
         .then((response => response.json()))
         .then(json => {
-            if(json.result){
+            if (json.result) {
                 bcrypt.compare(password, json.result).then(res => {
                     if (res) {
                         response.send("You have been authenticated");
@@ -103,42 +106,51 @@ app.post('/login', (request, response) => {
             } else {
                 response.send("Wrong password or username");
             }
-            
+
         });
 });
 
 app.get('/newUser', (request, response) => {
-    response.render('newUser', { title: "Discord V2" });
+    response.render('newUser', {
+        title: "Discord V2"
+    });
 });
 
-app.get('/profile/:name', function(req, res) {
+app.get('/profile/:name', function (req, res) {
     let nameToFind = req.params.name;
 
     let db = req.db;
 
     let usersCollection = db.get('users');
-    usersCollection.find({ "username": nameToFind }, {}, (err, data) => {
+    usersCollection.find({
+        "username": nameToFind
+    }, {}, (err, data) => {
         console.log(data);
-        res.render('./profile.ejs', { "data": data });
+        res.render('./profile.ejs', {
+            "data": data
+        });
     });
 });
 
+// Chatroom
 app.get('/chatroom', function (req, res) {
     res.render('chatroom');
-    let db = req.db;
-    let collection = db.get('messages');
+});
 
+// WebSocket
 io.on('connection', function (socket) {
     socket.on('chat message', function (msg) {
-        collection.insert({
+        db.get('messages').insert({
             'message': msg
         });
         io.emit('chat message', msg);
     });
 });
-});
 
 app.get('/login', (request, response) => {
-    response.render('login', { title: "Discord V2" });
+    response.render('login', {
+        title: "Discord V2"
+    });
 });
+
 server.listen(8080);
