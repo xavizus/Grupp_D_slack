@@ -20,6 +20,7 @@ router.get('/', (request, response) => {
     });
 });
 
+
 router.get('/exist/:dataType/:dataToSearch', (request, response) => {
     const allowedTypes = [
         "email",

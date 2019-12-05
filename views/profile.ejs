@@ -10,33 +10,34 @@
     <div class="container h-50">
         <div class="row h-100 justify-content-center align-items-center">
             <div class="col-sm-6">
+                <h1>Profilsida för <%= data[0].username %></h1>
                 <table>
+                 
                     <tr>
-                        <th>User</th>
-                        <th>Edit</th>
-                        <th>Delete</th>
+                      
                     </tr>
                     <tr>
                         <td>
-                            <%= data[0].username %>
-                        </td>
-                        <td>
-                            <%= data[0].email %>
-                        </td>
-                        <td>
-                            <%= data[0].password %>
+                            Ditt username: <%= data[0].username %>
                         </td>
                     </tr>
+                    <tr>
+                        <td>   
+                            Din email: <%= data[0].email %> 
+                        </td>  
+                    </tr>
+              
                 </table>
             </div>
+            
+            <div class="col-sm-6">       
+                <p>bild ska vara här</p> 
+                 
+                <a href="edituser/<%= data[0].username %>">Redigera konto</a><br>
+                
+                <a href="deleteuser/<%= data[0].username %>">Radera konto</a>
+            </div>
         </div>
-        <ul>
-            <li><a href="mailto:testuser1@testdomain.com">testuser1</a></li>
-            <li><a href="mailto:testuser2@testdomain.com">testuser2</a></li>
-            <li><a href="mailto:testuser3@testdomain.com">testuser3</a></li>
-        </ul>
-        <!DOCTYPE html>
-
     </div>
 
 </body>
