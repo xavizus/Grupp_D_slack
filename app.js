@@ -49,33 +49,30 @@ app.get('/newUser', (request, response) => {
     response.render('newUser', { title: "Discord V2" });
 });
 
-
-app.post('/newUser', (request, response) => {
-
 app.get('/profile/:name', function(req, res) {
-  let nameToFind = req.params.name;
-  client.connect(url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  }, (err, client) => {
-  if (err) {
-    console.error(err)
-    return
-  }else {
-    console.log("kopplad mot databas");
-    const db = client.db('gruppDDB')
-    const usersCollection = db.collection('users');
-    usersCollection.find({username:nameToFind}).toArray((err, data) => {
-      res.render('./profile.ejs', {data})
-    }) 
-    client.close();
-  }
-  })
-  
+    let nameToFind = req.params.name;
+    client.connect(url, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    }, (err, client) => {
+        if (err) {
+            console.error(err)
+            return
+        } else {
+            console.log("kopplad mot databas");
+            const db = client.db('gruppDDB')
+            const usersCollection = db.collection('users');
+            usersCollection.find({ username: nameToFind }).toArray((err, data) => {
+                res.render('./profile.ejs', { data })
+            })
+            client.close();
+        }
+    })
+
 })
 
 
-app.get('/login',(request, response)=> {
-  response.render('login',{title: "Discord V2"});
+app.get('/login', (request, response) => {
+    response.render('login', { title: "Discord V2" });
 });
 app.listen(8080);
