@@ -146,17 +146,27 @@ app.get('/profile/edituser/:username', function (req, res) {
 
 // Chatroom
 app.get('/chatroom', function (req, res) {
-    res.render('chatroom');
+    db.get('chatrooms').find({}).then((docs) => {
+        console.log(docs);
+
+        res.render('chatroom', {
+            'chatrooms': docs
+        });
+    });
 });
 
 // WebSocket
 io.on('connection', function (socket) {
+    // sends all messages in database to client
     db.get('messages').find({}).then((docs) => {
         for (doc of docs) {
             io.emit('chat message', doc.message);
         }
     });
+
+    // receives data from client
     socket.on('chat message', function (msg) {
+        // store data in database
         db.get('messages').insert({
             'userid': msg.userid,
             'chatroomid': 'testchatroom',
@@ -168,7 +178,7 @@ io.on('connection', function (socket) {
             'message': msg.message
         });
 
-        console.log(msg);
+        // sends message to client
         io.emit('chat message', msg.message);
     });
 });

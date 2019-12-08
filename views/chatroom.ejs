@@ -7,6 +7,13 @@
 </head>
 
 <body>
+    <div id="chatrooms">
+        <ul>
+            <% for (chatroom of chatrooms) { %>
+                <li> <%= chatroom.roomname %> </li>
+            <% } %>
+        </ul>
+    </div>
     <ul id="messages"></ul>
     <form action="">
         <input id="m" autocomplete="off"><button>Send</button>
