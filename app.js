@@ -39,7 +39,7 @@ const db = monk(mongoDB_URI);
 let store = new MongoDBStore({
     uri: `mongodb://${mongoDB_URI}`,
     collection: 'clientSessions'
-  });
+});
 
 // view engine setup
 app.use(express.static("views"));
@@ -48,13 +48,15 @@ app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({
+    extended: false
+}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(fileUpload({createParentPath: true}));
 
 // make it possible to use database connection elsewhere.
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     req.db = db;
     next();
 });
@@ -63,23 +65,24 @@ app.use(function(req, res, next) {
 app.use(require('express-session')({
     secret: process.env.SESSION_SECRET,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+        maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
     },
     store: store,
     resave: true,
     saveUninitialized: true
-  }));
+}));
 
 // create route for our api
 app.use('/api/v1', apiRouter);
 
 
 app.get('/login', (request, response) => {
-    if(request.session.authenticated) {
+    if (request.session.authenticated) {
         response.send("You are already authenticated!");
-    }
-    else {
-        response.render('login', { title: "Discord V2" });
+    } else {
+        response.render('login', {
+            title: "Discord V2"
+        });
     }
 });
 
@@ -91,7 +94,7 @@ app.post('/login', (request, response) => {
     fetch(`http://localhost:8080/api/v1/getPasswordHash/${email}`)
         .then((response => response.json()))
         .then(json => {
-            if(json.result){
+            if (json.result) {
                 bcrypt.compare(password, json.result).then(res => {
                     if (res) {
                         response.send("You have been authenticated");
@@ -106,11 +109,11 @@ app.post('/login', (request, response) => {
             } else {
                 response.send("Wrong password or username");
             }
-            
+
         });
 });
 
-app.get('/profile/:name', function(req, res) {
+app.get('/profile/:name', function (req, res) {
     let nameToShow = req.params.name;
     let db = req.db;
     let usersCollection = db.get('users');
@@ -143,12 +146,9 @@ app.get('/profile/edituser/:username', async function (req, res) {
     let db = request.db;
     let userTabell = db.get('users');
     try {
-        console.log("inne i try");
         if(!request.files) {
-            console.log("inne i tryIF");
             response.send(404);
         } else {
-            console.log("inne i tryELSE");
 
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
@@ -183,28 +183,35 @@ app.get('/profile/edituser/:username', async function (req, res) {
     
 });
 
-app.get('/profile/deleteuser/:user', (request, response) =>{
+app.get('/profile/deleteuser/:user', (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
 
     let userToDelete = request.params.user;
     console.log(userToDelete);
-    userTabell.findOneAndDelete({'username' : userToDelete}, (err, item) => {
+    userTabell.findOneAndDelete({
+        'username': userToDelete
+    }, (err, item) => {
         if (err) {
             // If it failed, return error
             response.send("There was a problem adding the information to the database.");
-          } else {
+        } else {
             // And forward to success pages
             response.redirect("/login");
-          }
+        }
     })
 });
 
 app.get('/newUser', (request, response) => {
-    response.render('newUser', { title: "Discord V2" });
+    response.render('newUser', {
+        title: "Discord V2"
+    });
 });
 
 app.get('/login', (request, response) => {
-    response.render('login', { title: "Discord V2" });
+    response.render('login', {
+        title: "Discord V2"
+    });
 });
+
 server.listen(8080);
