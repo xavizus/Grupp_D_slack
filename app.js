@@ -151,11 +151,25 @@ app.get('/chatroom', function (req, res) {
 
 // WebSocket
 io.on('connection', function (socket) {
+    db.get('messages').find({}).then((docs) => {
+        for (doc of docs) {
+            io.emit('chat message', doc.message);
+        }
+    });
     socket.on('chat message', function (msg) {
         db.get('messages').insert({
-            'message': msg
+            'userid': msg.userid,
+            'chatroomid': 'testchatroom',
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            'message': msg.message
         });
-        io.emit('chat message', msg);
+
+        console.log(msg);
+        io.emit('chat message', msg.message);
     });
 });
 
