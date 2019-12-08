@@ -11,12 +11,13 @@
     "dotenv": "^8.2.0",
     "ejs": "~2.6.1",
     "express": "~4.16.1",
+    "express-fileupload": "^1.1.6",
     "express-session": "^1.17.0",
     "http-errors": "~1.6.3",
     "mongodb": "^3.3.5",
     "monk": "^7.1.1",
     "morgan": "~1.9.1",
-    "socket.io": "^2.3.0",
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.0",
+    "socket.io": "^2.3.0"
   }
 }
