@@ -87,7 +87,7 @@ app.get('/',(request, response) => {
 
 app.get('/login', (request, response) => {
     if (request.session.authenticated) {
-        response.send("You are already authenticated!");
+        response.redirect('/chatroom');
     } else {
         response.render('login', {
             title: "Discord V2"
