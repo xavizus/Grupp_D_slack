@@ -206,8 +206,11 @@ app.get('/chatroom', function (req, res) {
 });
 
 app.get('/chatroom/:room', function (req, res) {
-    //Spara loginnamn i variabel och skicka med den i view
-    let currentUser = req.session.username;
+    // 
+    db.get('users').find({}).then((docs) => {
+        req.users = docs;
+    });
+    
     // checks if the chatroom the user is trying to access exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
@@ -216,10 +219,12 @@ app.get('/chatroom/:room', function (req, res) {
             return res.redirect('/chatroom/General');
         } else {
             db.get('chatrooms').find({}).then((docs) => {
+                console.log(req.users)
                 res.render('chatroom', {
                     'chatrooms': docs,
                     roomName: req.params.room,
-                    currentUser : currentUser
+                    currentUser: req.session.username,
+                    allUsers: req.users
                 });
             });
         }
