@@ -147,7 +147,12 @@ app.post('/newAccount',(request,response) => {
                 },
                 body: JSON.stringify(data)
             }).then((response => response.json())).then(result => {
-                console.log(result);
+                if(result.result == "OK") {
+                    response.redirect('/login');
+                }
+                else {
+                    response.send(result);
+                }
             });
         });
     });
