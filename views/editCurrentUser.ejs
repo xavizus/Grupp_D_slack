@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" dir="ltr">
   <head>
     <% include partials/header.ejs %>
     
@@ -8,12 +8,13 @@
         <div class="container h-50">
                 <div class="row h-100 justify-content-center align-items-center">
                     <div class="col-sm-6">
-                            <h1>Redigeringssida för <%= user.username %></h1>
-                            <form id="formEditUser" name="editeduser" method="post" action="/profile/<%= user.username %>">
-                              <input id="inputUserName" type="text" value="<%= user.username %>" name="username" />
-                              <input id="inputUserEmail" type="text" value="<%= user.email %>" name="useremail" />
-                              <button id="btnSubmit" type="submit">Submit</button>
-                            </form>
+                            <h1>Redigeringssida för <%= data.username %></h1>
+                            <form id="formEditUser" method="post" enctype="multipart/form-data" action="/profile/<%= data.username %>">
+                              <input id="inputUserName" type="text" value="<%= data.username %>" name="username" />
+                              <input id="inputUserEmail" type="text" value="<%= data.email %>" name="useremail" />
+                              <input type="file" name="profile_image" id="profile_image">
+                              <button type="submit">Submit Changes</button>
+                            </form>   
                     </div>  
                 </div>
             </div>
