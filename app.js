@@ -73,6 +73,15 @@ app.use(require('express-session')({
 app.use('/api/v1', apiRouter);
 
 
+app.get('/',(request, response) => {
+    if(request.session.authenticated) {
+        response.redirect('/chatroom');
+    }
+    else {
+        response.redirect('/login');
+    }
+});
+
 app.get('/login', (request, response) => {
     if (request.session.authenticated) {
         response.send("You are already authenticated!");
@@ -84,6 +93,7 @@ app.get('/login', (request, response) => {
 });
 
 app.post('/login', (request, response) => {
+    console.log(request.body);
     let email = request.body.email;
 
     let password = request.body.password;
@@ -108,6 +118,36 @@ app.post('/login', (request, response) => {
             }
 
         });
+});
+
+app.get('/newAccount', (request, response) => {
+    response.render('newAccount', {
+        title: "Discord V2"
+    });
+});
+
+app.post('/newAccount',(request,response) => {
+    let email = request.body.email;
+    let username = request.body.username;
+    let password = request.body.password;
+    let data = {
+        email: email,
+        username: username
+    };
+    bcrypt.genSalt(10, function(err, salt) {
+        bcrypt.hash(password, salt, function(err, hash) {
+            data.password = hash;
+            fetch('http://localhost:8080/api/v1/addUser', {
+                method:'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then((response => response.json())).then(result => {
+                console.log(result);
+            });
+        });
+    });
 });
 
 app.get('/profile/:name', function (req, res) {
@@ -256,16 +296,6 @@ app.get('/profile/deleteuser/:user', (request, response) => {
     })
 });
 
-app.get('/newUser', (request, response) => {
-    response.render('newUser', {
-        title: "Discord V2"
-    });
-});
 
-app.get('/login', (request, response) => {
-    response.render('login', {
-        title: "Discord V2"
-    });
-});
 
 server.listen(8080);

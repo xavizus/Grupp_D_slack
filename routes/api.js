@@ -40,7 +40,7 @@ router.get('/getPasswordHash/:email', (request, response) => {
         response.send(responseObject);
     });
 
-})
+});
 
 router.get('/exist/:dataType/:dataToSearch', (request, response) => {
     const allowedTypes = [
@@ -76,6 +76,24 @@ router.get('/exist/:dataType/:dataToSearch', (request, response) => {
         response.send(responseObject);
     });
 
+});
+
+router.post('/addUser', (request,response) => {
+    let db = request.db;
+    let collectionUsers = db.get('users');
+    collectionUsers.insert({
+        "username": request.body.username,
+        "email":request.body.email,
+        "password": request.body.password,
+        "profilePicturePath": "/images/default.png"
+    },(error,result) => {
+        if(error) {
+            response.send({error})
+            return;
+        } else {
+            response.send({result: "OK"});
+        }
+    });
 });
 
 module.exports = router;
