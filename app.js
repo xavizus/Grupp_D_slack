@@ -132,31 +132,72 @@ app.get('/profile/:name', function (req, res) {
 app.get('/profile/edituser/:username', async function (req, res) {
     var db = req.db;
     var collection = db.get('users');
-    //console.log(req.params.username);
-    collection.findOne({username: req.params.username},{}, function (err, data) {
-        //console.log(data.username);
-      res.render('./editCurrentUser', {"data": data});
+    console.log(req.params.username);
+    collection.findOne({
+        username: req.params.username
+    }, function (e, data) {
+        console.log(data);
+        res.render('editCurrentUser', {
+            "data": data
+        });
     });
 });
 
+// Chatroom
+app.get('/chatroom', function (req, res) {
+    db.get('chatrooms').find({}).then((docs) => {
+        console.log(docs);
 
+        res.render('chatroom', {
+            'chatrooms': docs
+        });
+    });
+});
 
-  app.post('/profile/:olduser', async (request, response) => {
+// WebSocket
+io.on('connection', function (socket) {
+    // sends all messages in database to client
+    db.get('messages').find({}).then((docs) => {
+        for (doc of docs) {
+            io.emit('chat message', doc.message);
+        }
+    });
+
+    // receives data from client
+    socket.on('chat message', function (msg) {
+        // store data in database
+        db.get('messages').insert({
+            'userid': msg.userid,
+            'chatroomid': 'testchatroom',
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            'message': msg.message
+        });
+
+        // sends message to client
+        io.emit('chat message', msg.message);
+    });
+});
+
+app.post('/profile/:olduser', async (request, response) => {
     console.log(request.files.name);
     let db = request.db;
     let userTabell = db.get('users');
     try {
+        console.log("inne i try");
         if(!request.files) {
+            console.log("inne i tryIF");
             response.send(404);
         } else {
-
+            console.log("inne i tryELSE");  
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
-            let oldUserName = request.params.olduser;
-
+            let oldUserName = request.params.olduser;   
             let newImageName = request.files.profile_image;
-            newImageName.mv('./public/images/' + newImageName.name);
-
+            newImageName.mv('./public/images/' + newImageName.name);    
             userTabell.update({
                 'username': oldUserName
             }, {
@@ -175,7 +216,7 @@ app.get('/profile/edituser/:username', async function (req, res) {
                 }
             });
         }
-      
+    
     }
     catch(err) {
         response.status(500).send(err);
