@@ -42,6 +42,35 @@ router.get('/getPasswordHash/:email', (request, response) => {
 
 });
 
+router.get('/getUserInfo/:email', (request,response) => {
+    let email = request.params.email;
+    let responseObject = {
+        response: "OK"
+    }
+
+    let db = request.db;
+    let collection = db.get("users");
+
+    collection.find({ "email": email }, { fields: { "username": 1, _id: 1 } }, (error, data) => {
+        if (error) {
+            response.send({error});
+            return;
+        }
+
+        if(data.length < 1 || data == "") {
+            responseObject.result = false;
+
+            response.send(responseObject);
+            return;
+        }
+
+        responseObject.result = data[0];
+
+        response.send(responseObject);
+
+    });
+});
+
 router.get('/exist/:dataType/:dataToSearch', (request, response) => {
     const allowedTypes = [
         "email",

@@ -53,7 +53,9 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(fileUpload({createParentPath: true}));
+app.use(fileUpload({
+    createParentPath: true
+}));
 
 // make it possible to use database connection elsewhere.
 app.use(function (req, res, next) {
@@ -76,11 +78,10 @@ app.use(require('express-session')({
 app.use('/api/v1', apiRouter);
 
 
-app.get('/',(request, response) => {
-    if(request.session.authenticated) {
+app.get('/', (request, response) => {
+    if (request.session.authenticated) {
         response.redirect('/chatroom');
-    }
-    else {
+    } else {
         response.redirect('/login');
     }
 });
@@ -96,7 +97,6 @@ app.get('/login', (request, response) => {
 });
 
 app.post('/login', (request, response) => {
-    console.log(request.body);
     let email = request.body.email;
 
     let password = request.body.password;
@@ -107,11 +107,19 @@ app.post('/login', (request, response) => {
             if (json.result) {
                 bcrypt.compare(password, json.result).then(res => {
                     if (res) {
-                        response.send("You have been authenticated");
                         // Set data to the session
                         request.session.authenticated = true;
-                        // Save the session so you can use it later.
-                        request.session.save();
+
+                        fetch(`http://localhost:8080/api/v1/getUserInfo/${email}`)
+                            .then(response => response.json())
+                            .then(result => {
+                                console.log(result);
+                                request.session.username = result.result.username;
+                                request.session.userID = result.result._id;
+                                // Save the session so you can use it later.
+                                request.session.save();
+                                response.redirect('/chatroom');
+                            });
                     } else {
                         response.send("You are unauthorized");
                     }
@@ -129,7 +137,7 @@ app.get('/newAccount', (request, response) => {
     });
 });
 
-app.post('/newAccount',(request,response) => {
+app.post('/newAccount', (request, response) => {
     let email = request.body.email;
     let username = request.body.username;
     let password = request.body.password;
@@ -137,20 +145,19 @@ app.post('/newAccount',(request,response) => {
         email: email,
         username: username
     };
-    bcrypt.genSalt(10, function(err, salt) {
-        bcrypt.hash(password, salt, function(err, hash) {
+    bcrypt.genSalt(10, function (err, salt) {
+        bcrypt.hash(password, salt, function (err, hash) {
             data.password = hash;
             fetch('http://localhost:8080/api/v1/addUser', {
-                method:'POST',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)
             }).then((response => response.json())).then(result => {
-                if(result.result == "OK") {
+                if (result.result == "OK") {
                     response.redirect('/login');
-                }
-                else {
+                } else {
                     response.send(result);
                 }
             });
@@ -163,14 +170,17 @@ app.get('/profile/:name', function (req, res) {
     let nameToShow = req.params.name;
     let db = req.db;
     let usersCollection = db.get('users');
-        usersCollection.find({"username": nameToShow }, {}, (err, data) => {
-            if(data.length != 0) {
-                res.render('./profile.ejs', { "data": data });
-            }
-            else {
-                res.send("user does not exist");
-            }        
-        })   
+    usersCollection.find({
+        "username": nameToShow
+    }, {}, (err, data) => {
+        if (data.length != 0) {
+            res.render('./profile.ejs', {
+                "data": data
+            });
+        } else {
+            res.send("user does not exist");
+        }
+    })
 })
 
 app.get('/profile/edituser/:username', async function (req, res) {
@@ -194,7 +204,9 @@ app.get('/chatroom', function (req, res) {
 
 app.get('/chatroom/:room', function (req, res) {
     // checks if the chatroom the user is trying to access exists
-    db.get('chatrooms').findOne({roomname: req.params.room}).then((docs) => {
+    db.get('chatrooms').findOne({
+        roomname: req.params.room
+    }).then((docs) => {
         if (docs == null) {
             return res.redirect('/chatroom/General');
         } else {
@@ -258,9 +270,9 @@ io.on('connection', function (socket) {
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
-    
+
     try {
-        if(!request.files) {
+        if (!request.files) {
             //Om ingen bild skickas med gör något
             response.send(404);
 
@@ -268,9 +280,9 @@ app.post('/profile/:olduser', async (request, response) => {
             //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
-            let oldUserName = request.params.olduser;   
+            let oldUserName = request.params.olduser;
             let newImageName = request.files.profile_image;
-            newImageName.mv('./public/images/' + newImageName.name);    
+            newImageName.mv('./public/images/' + newImageName.name);
             userTabell.update({
                 'username': oldUserName
             }, {
@@ -289,12 +301,11 @@ app.post('/profile/:olduser', async (request, response) => {
                 }
             });
         }
-    
-    }
-    catch(err) {
+
+    } catch (err) {
         response.status(500).send(err);
     }
-    
+
 });
 
 //Delete user
