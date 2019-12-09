@@ -113,13 +113,12 @@ app.post('/login', (request, response) => {
         });
 });
 
+// 
 app.get('/profile/:name', function (req, res) {
     let nameToShow = req.params.name;
     let db = req.db;
     let usersCollection = db.get('users');
-    console.log(usersCollection.length);
         usersCollection.find({"username": nameToShow }, {}, (err, data) => {
-            console.log(!req.files);
             if(data.length != 0) {
                 res.render('./profile.ejs', { "data": data });
             }
@@ -210,17 +209,18 @@ io.on('connection', function (socket) {
     });
 });
 
+//Edit user
 app.post('/profile/:olduser', async (request, response) => {
-    console.log(request.files.name);
     let db = request.db;
     let userTabell = db.get('users');
+    
     try {
-        console.log("inne i try");
         if(!request.files) {
-            console.log("inne i tryIF");
+            //Om ingen bild skickas med gör något
             response.send(404);
+
         } else {
-            console.log("inne i tryELSE");  
+            //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
             let oldUserName = request.params.olduser;   
@@ -252,6 +252,7 @@ app.post('/profile/:olduser', async (request, response) => {
     
 });
 
+//Delete user
 app.get('/profile/deleteuser/:user', (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
