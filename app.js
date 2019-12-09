@@ -148,8 +148,8 @@ app.post('/newAccount', (request, response) => {
         email: email,
         username: username
     };
-    bcrypt.genSalt(10, function (err, salt) {
-        bcrypt.hash(password, salt, function (err, hash) {
+    bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(password, salt,(err, hash) => {
             data.password = hash;
             fetch(`${apiURL}/addUser`, {
                 method: 'POST',
