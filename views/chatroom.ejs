@@ -16,6 +16,9 @@
             <form id="createChatRoom" action="">
                     <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
             </form>
+            
+                <p>Logged in as <%=currentUser%>
+                <a href="/profile/<%=currentUser%>">View Profile</a>
         
         <ul>
             <% for (chatroom of chatrooms) { %>

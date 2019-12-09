@@ -168,11 +168,11 @@ app.post('/newAccount', (request, response) => {
 // 
 app.get('/profile/:name', function (req, res) {
     let nameToShow = req.params.name;
+    console.log(nameToShow);
+    console.log(req.session.username);
     let db = req.db;
     let usersCollection = db.get('users');
-    usersCollection.find({
-        "username": nameToShow
-    }, {}, (err, data) => {
+    usersCollection.find({"username": nameToShow}, {}, (err, data) => {
         if (data.length != 0) {
             res.render('./profile.ejs', {
                 "data": data
@@ -186,11 +186,11 @@ app.get('/profile/:name', function (req, res) {
 app.get('/profile/edituser/:username', async function (req, res) {
     var db = req.db;
     var collection = db.get('users');
-    console.log(req.params.username);
+    //console.log(req.params.username);
     collection.findOne({
         username: req.params.username
     }, function (e, data) {
-        console.log(data);
+        //console.log(data);
         res.render('editCurrentUser', {
             "data": data
         });
@@ -203,6 +203,8 @@ app.get('/chatroom', function (req, res) {
 });
 
 app.get('/chatroom/:room', function (req, res) {
+    //Spara loginnamn i variabel och skicka med den i view
+    let currentUser = req.session.username;
     // checks if the chatroom the user is trying to access exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
@@ -213,7 +215,8 @@ app.get('/chatroom/:room', function (req, res) {
             db.get('chatrooms').find({}).then((docs) => {
                 res.render('chatroom', {
                     'chatrooms': docs,
-                    roomName: req.params.room
+                    roomName: req.params.room,
+                    currentUser : currentUser
                 });
             });
         }
