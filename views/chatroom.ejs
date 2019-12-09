@@ -12,6 +12,11 @@
     </script>
 
     <div id="chatrooms">
+        <h3>Create chat room</h3>
+            <form id="createChatRoom" action="">
+                    <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
+            </form>
+        
         <ul>
             <% for (chatroom of chatrooms) { %>
             <li><a href="/chatroom/<%= chatroom.roomname %>"> <%= chatroom.roomname %> </a></li>
@@ -21,7 +26,7 @@
 
     <div id="chat-container">
         <ul id="messages"></ul>
-        <form action="">
+        <form id="sendMessage" action="">
             <input id="m" autocomplete="off"><button>Send</button>
         </form>
     </div>

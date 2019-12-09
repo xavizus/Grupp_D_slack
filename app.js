@@ -176,27 +176,33 @@ io.on('connection', function (socket) {
             chatroomid: room
         }).then((docs) => {
             for (doc of docs) {
+                // TODO: only send to user that just connected
                 io.in(room).emit('chat message', doc.message);
             }
         });
     });
 
-    // receives data from client
-    socket.on('chat message', function (room, msg) {
+    // add new chat room to database
+    socket.on('create-chat-room', function (newChatRoom) {
+        db.get('chatrooms').insert(newChatRoom);
+    });
+
+    // receives message data from client
+    socket.on('chat message', function (room, data) {
         // store data in database
         db.get('messages').insert({
-            'userid': msg.userid,
+            'userid': data.userid,
             'chatroomid': room,
             'date': new Date().toLocaleDateString('sv'),
             'time': new Date().toLocaleTimeString('sv', {
                 hour: '2-digit',
                 minute: '2-digit'
             }),
-            'message': msg.message
+            'message': data.message
         });
-        
+
         // sends message to client
-        io.in(room).emit('chat message', msg.message);
+        io.in(room).emit('chat message', data.message);
     });
 
     // does stuff when user disconnects
