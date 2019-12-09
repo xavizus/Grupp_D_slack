@@ -33,7 +33,7 @@ require('dotenv').config({
 });
 
 // Server port
-let httpPort = process.env.npm_package_config_port;
+let httpPort = process.env.npm_package_config_port || 8080;
 let apiURL = `http://localhost:${httpPort}/api/v1`
 
 let mongoDB_URI = `${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_SERVER}/${process.env.MONGODB_DATABASE}?authSource=${process.env.MONGODB_DATABASE}&w=1`
