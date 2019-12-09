@@ -1,13 +1,15 @@
 $(function () {
     var socket = io();
 
+    socket.emit('user-connected', roomName, 'testuser');
+
     // message input form
     $('form').submit(function (e) {
         // prevents page reloading
         e.preventDefault();
 
         // sends data to server
-        socket.emit('chat message', {
+        socket.emit('chat message', roomName, {
             'userid': 'testuser',
             'message': $('#m').val()
         });
