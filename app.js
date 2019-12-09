@@ -32,6 +32,10 @@ require('dotenv').config({
     path: __dirname + '/.env'
 });
 
+// Server port
+let httpPort = process.env.npm_package_config_port || 8080;
+let apiURL = `http://localhost:${httpPort}/api/v1`
+
 let mongoDB_URI = `${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_SERVER}/${process.env.MONGODB_DATABASE}?authSource=${process.env.MONGODB_DATABASE}&w=1`
 // Monk DB-connection
 const db = monk(mongoDB_URI);
@@ -101,7 +105,7 @@ app.post('/login', (request, response) => {
 
     let password = request.body.password;
 
-    fetch(`http://localhost:8080/api/v1/getPasswordHash/${email}`)
+    fetch(`${apiURL}/getPasswordHash/${email}`)
         .then((response => response.json()))
         .then(json => {
             if (json.result) {
@@ -110,10 +114,9 @@ app.post('/login', (request, response) => {
                         // Set data to the session
                         request.session.authenticated = true;
 
-                        fetch(`http://localhost:8080/api/v1/getUserInfo/${email}`)
+                        fetch(`${apiURL}/getUserInfo/${email}`)
                             .then(response => response.json())
                             .then(result => {
-                                console.log(result);
                                 request.session.username = result.result.username;
                                 request.session.userID = result.result._id;
                                 // Save the session so you can use it later.
@@ -148,7 +151,7 @@ app.post('/newAccount', (request, response) => {
     bcrypt.genSalt(10, function (err, salt) {
         bcrypt.hash(password, salt, function (err, hash) {
             data.password = hash;
-            fetch('http://localhost:8080/api/v1/addUser', {
+            fetch(`${apiURL}/addUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -333,4 +336,4 @@ app.get('/profile/deleteuser/:user', (request, response) => {
 
 
 
-server.listen(8080);
+server.listen(httpPort);
