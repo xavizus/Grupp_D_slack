@@ -229,16 +229,15 @@ app.get('/chatroom/:room', function (req, res) {
 // WebSocket
 io.on('connection', function (socket) {
     // does stuff when user connects
-    socket.on('user-connected', function (room, name) {
+    socket.on('user-connected', function (room, name, socketID) {
         socket.join(room);
-
         // sends old chatroom messages from database to client
         db.get('messages').find({
             chatroomid: room
         }).then((docs) => {
             for (doc of docs) {
-                // TODO: only send to user that just connected
-                io.in(room).emit('chat message', doc.message);
+                // sends old messages to the user that just connected
+                io.to(socketID).emit('chat message', doc.userid, doc.message);
             }
         });
     });
@@ -263,7 +262,7 @@ io.on('connection', function (socket) {
         });
 
         // sends message to client
-        io.in(room).emit('chat message', data.message);
+        io.in(room).emit('chat message', data.userid, data.message);
     });
 
     // does stuff when user disconnects

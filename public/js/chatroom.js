@@ -2,7 +2,10 @@ $(function () {
     var socket = io();
 
     // when user connects
-    socket.emit('user-connected', roomName, 'testuser');
+    socket.on('connect', () => {
+        socket.emit('user-connected', roomName, currentUser, socket.id);
+    });
+
 
     // create chat room input form
     $('#createChatRoom').submit(function (e) {
@@ -25,7 +28,7 @@ $(function () {
 
         // sends data to server
         socket.emit('chat message', roomName, {
-            'userid': 'testuser',
+            'userid': currentUser,
             'message': $('#m').val()
         });
 
@@ -35,7 +38,7 @@ $(function () {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function (message) {
-        $('#messages').append($('<li>').text(message));
+    socket.on('chat message', function (user, message) {
+        $('#messages').append($('<li>').html('<a href="/profile/' + user + '">' + user + '</a> skrev: ' + message));
     });
 });
