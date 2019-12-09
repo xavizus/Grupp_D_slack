@@ -145,40 +145,68 @@ app.get('/profile/edituser/:username', async function (req, res) {
 
 // Chatroom
 app.get('/chatroom', function (req, res) {
-    db.get('chatrooms').find({}).then((docs) => {
-        console.log(docs);
+    res.redirect('chatroom/General');
+});
 
-        res.render('chatroom', {
-            'chatrooms': docs
-        });
+app.get('/chatroom/:room', function (req, res) {
+    // checks if the chatroom the user is trying to access exists
+    db.get('chatrooms').findOne({roomname: req.params.room}).then((docs) => {
+        if (docs == null) {
+            return res.redirect('/chatroom/General');
+        } else {
+            db.get('chatrooms').find({}).then((docs) => {
+                res.render('chatroom', {
+                    'chatrooms': docs,
+                    roomName: req.params.room
+                });
+            });
+        }
     });
 });
 
 // WebSocket
 io.on('connection', function (socket) {
-    // sends all messages in database to client
-    db.get('messages').find({}).then((docs) => {
-        for (doc of docs) {
-            io.emit('chat message', doc.message);
-        }
+    // does stuff when user connects
+    socket.on('user-connected', function (room, name) {
+        socket.join(room);
+
+        // sends old chatroom messages from database to client
+        db.get('messages').find({
+            chatroomid: room
+        }).then((docs) => {
+            for (doc of docs) {
+                // TODO: only send to user that just connected
+                io.in(room).emit('chat message', doc.message);
+            }
+        });
     });
 
-    // receives data from client
-    socket.on('chat message', function (msg) {
+    // add new chat room to database
+    socket.on('create-chat-room', function (newChatRoom) {
+        db.get('chatrooms').insert(newChatRoom);
+    });
+
+    // receives message data from client
+    socket.on('chat message', function (room, data) {
         // store data in database
         db.get('messages').insert({
-            'userid': msg.userid,
-            'chatroomid': 'testchatroom',
+            'userid': data.userid,
+            'chatroomid': room,
             'date': new Date().toLocaleDateString('sv'),
             'time': new Date().toLocaleTimeString('sv', {
                 hour: '2-digit',
                 minute: '2-digit'
             }),
-            'message': msg.message
+            'message': data.message
         });
 
         // sends message to client
-        io.emit('chat message', msg.message);
+        io.in(room).emit('chat message', data.message);
+    });
+
+    // does stuff when user disconnects
+    socket.on('disconnect', function (room, name) {
+        // maybe something here...
     });
 });
 
