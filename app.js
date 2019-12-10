@@ -169,292 +169,298 @@ app.post('/newAccount', (request, response) => {
 });
 
 // 
-app.get('/profile/:name', function (req, res) {
-            let sessionUserName = req.session.username;
-            let nameToShow = req.params.name;
-            if (sessionUserName == nameToShow) {
-                console.log(nameToShow);
-                console.log(req.session.username);
-                let db = req.db;
-                let usersCollection = db.get('users');
-                usersCollection.find({
-                    "username": nameToShow
-                }, {}, (err, data) => {
-                    if (data.length != 0) {
-                        res.render('./profile.ejs', {
-                            "data": data
-                        });
-                    } else if () {
-                        res.send("user does not exist");
-                    }
-                })
-            } else if (sessionUserName !== nameToShow) {
-                usersCollection.find({
-                    "username": nameToShow
-                }, {}, (err, data) => {
-                    if (data.length != 0) {
-                        res.render('./visitorProfile.ejs', {
-                            "data": data
-                        });
+app.get('/profile/:name', async function (req, res) {
+    let sessionUserName = req.session.username;
+    let currentUserNAme = req.params.name;
+    let db = req.db;
+    let usersCollection = db.get('users');
 
-                    }
-                })
+    if (sessionUserName === currentUserNAme) {
+        console.log("visa mainprofile");
+        usersCollection.find({
+            "username": currentUserNAme
+        }, {}, (err, data) => {
+
+            if (data.length != 0) {
+                res.render('./profile.ejs', {
+                    "data": data
+                });
+            } else {
+                res.send("user does not exist");
+            }
+        })
+
+    } else if (sessionUserName !== currentUserNAme) {
+        console.log("visa visitorprofile");
+        usersCollection.find({
+            "username": currentUserNAme
+        }, {}, (err, data) => {
+            if (data.length != 0) {
+                res.render('./visitorProfile.ejs', {
+                    "data": data
+                });
+
+            } else {
+                res.send("user does not exist");
+            }
+        })
+    }
+})
+
+app.get('/profile/edituser/:username', async function (req, res) {
+    var db = req.db;
+    var collection = db.get('users');
+    //console.log(req.params.username);
+    collection.findOne({
+        username: req.params.username
+    }, function (e, data) {
+        //console.log(data);
+        res.render('editCurrentUser', {
+            "data": data
+        });
+    });
+});
+
+// Chatroom
+app.get('/chatroom', function (req, res) {
+    res.redirect('chatroom/General');
+});
+
+app.get('/chatroom/:room', function (req, res) {
+    if (!req.session.authenticated) {
+        res.redirect('/login');
+    }
+    // checks if the chatroom the user is trying to access (/:room) exists
+    db.get('chatrooms').findOne({
+        roomname: req.params.room
+    }).then((result) => {
+        if (result == null) {
+            return res.redirect('/chatroom/General');
+        } else {
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    // render the page
+                    res.render('chatroom', {
+                        'chatrooms': chatRooms,
+                        roomName: req.params.room,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
+                });
+            });
+        }
+    });
+
+});
+
+// Direct messages
+app.get('/dms', function (req, res) {
+    res.redirect('chatroom/General');
+});
+
+app.get('/dms/:target', function (req, res) {
+    // check if user (/:target) exists
+    db.get('users').findOne({
+        username: req.params.target
+    }).then((result) => {
+        if (result == null) {
+            return res.redirect('/chatroom/General');
+        } else {
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    res.render('dms', {
+                        // render the page
+                        'chatrooms': chatRooms,
+                        target: req.params.target,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
+                });
+            });
+        }
+    });
+});
+
+// WebSocket
+io.on('connection', function (socket) {
+    // does stuff when user connects
+    socket.on('user-connected', function (room, name, socketID) {
+        socket.join(room);
+        // sends old chatroom messages from database to client
+        db.get('messages').find({
+            chatroomid: room
+        }).then((docs) => {
+            for (doc of docs) {
+                // sends old messages to the user that just connected
+                io.to(socketID).emit('chat message', doc.userid, doc.message);
+            }
+        });
+    });
+
+    // does stuff when user connects to private chat
+    socket.on('user-connected-private', function (target, name, socketID) {
+        socket.join(name + target);
+
+        // gets old messages sent by user
+        db.get('private-messages').find({
+            senderID: name,
+            receiverID: target
+        }).then((user_messages) => {
+            // gets old messages sent by target
+            db.get('private-messages').find({
+                senderID: target,
+                receiverID: name
+            }).then((target_messages) => {
+                // combine messages to one array
+                let allMessages = user_messages.concat(target_messages)
+
+                // sort array by time
+                allMessages.sort(function (a, b) {
+                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
+                });
+
+                // sort array by date
+                allMessages.sort(function (a, b) {
+                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
+                });
+
+                // sends old messages to the user that just connected
+                for (doc of allMessages) {
+                    io.to(socketID).emit('private message', doc.senderID, doc.message);
+                }
             })
+        })
+    });
 
-                app.get('/profile/edituser/:username', async function (req, res) {
-                    var db = req.db;
-                    var collection = db.get('users');
-                    //console.log(req.params.username);
-                    collection.findOne({
-                        username: req.params.username
-                    }, function (e, data) {
-                        //console.log(data);
-                        res.render('editCurrentUser', {
-                            "data": data
-                        });
-                    });
-                });
+    // add new chat room to database
+    socket.on('create-chat-room', function (newChatRoom) {
+        // checks if chat room already exists
+        db.get('chatrooms').findOne({
+            roomname: newChatRoom.roomname
+        }).then((result) => {
+            if (result == null) {
+                db.get('chatrooms').insert(newChatRoom);
+                socket.emit('create-status', 'Chat room was created, refresh page')
+            } else {
+                socket.emit('create-status', 'A room with this name already exists')
+            }
+        });
+    });
 
-                // Chatroom
-                app.get('/chatroom', function (req, res) {
-                    res.redirect('chatroom/General');
-                });
+    // receives message data from client
+    socket.on('chat message', function (room, data) {
+        // store data in database
+        db.get('messages').insert({
+            'userid': data.userid,
+            'chatroomid': room,
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }),
+            'message': data.message
+        });
 
-                app.get('/chatroom/:room', function (req, res) {
-                    if (!req.session.authenticated) {
-                        res.redirect('/login');
-                    }
-                    // checks if the chatroom the user is trying to access (/:room) exists
-                    db.get('chatrooms').findOne({
-                        roomname: req.params.room
-                    }).then((result) => {
-                        if (result == null) {
-                            return res.redirect('/chatroom/General');
-                        } else {
-                            // gets users from database
-                            db.get('users').find({}).then((users) => {
-                                // gets chatrooms from database
-                                db.get('chatrooms').find({}).then((chatRooms) => {
-                                    // render the page
-                                    res.render('chatroom', {
-                                        'chatrooms': chatRooms,
-                                        roomName: req.params.room,
-                                        currentUser: req.session.username,
-                                        allUsers: users
-                                    });
-                                });
-                            });
-                        }
-                    });
+        // sends message to client
+        io.in(room).emit('chat message', data.userid, data.message);
+    });
 
-                });
+    // receives private message from client
+    socket.on('private message', function (target, data) {
+        db.get('private-messages').insert({
+            'senderID': data.userid,
+            'receiverID': target,
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }),
+            'message': data.message
+        });
 
-                // Direct messages
-                app.get('/dms', function (req, res) {
-                    res.redirect('chatroom/General');
-                });
+        // sends message to client
+        io.in(target + data.userid).emit('private message', data.userid, data.message);
+        io.in(data.userid + target).emit('private message', data.userid, data.message);
+    });
 
-                app.get('/dms/:target', function (req, res) {
-                    // check if user (/:target) exists
-                    db.get('users').findOne({
-                        username: req.params.target
-                    }).then((result) => {
-                        if (result == null) {
-                            return res.redirect('/chatroom/General');
-                        } else {
-                            // gets users from database
-                            db.get('users').find({}).then((users) => {
-                                // gets chatrooms from database
-                                db.get('chatrooms').find({}).then((chatRooms) => {
-                                    res.render('dms', {
-                                        // render the page
-                                        'chatrooms': chatRooms,
-                                        target: req.params.target,
-                                        currentUser: req.session.username,
-                                        allUsers: users
-                                    });
-                                });
-                            });
-                        }
-                    });
-                });
+    // does stuff when user disconnects
+    socket.on('disconnect', function (room, name) {
+        // maybe something here...
+    });
+});
 
-                // WebSocket
-                io.on('connection', function (socket) {
-                    // does stuff when user connects
-                    socket.on('user-connected', function (room, name, socketID) {
-                        socket.join(room);
-                        // sends old chatroom messages from database to client
-                        db.get('messages').find({
-                            chatroomid: room
-                        }).then((docs) => {
-                            for (doc of docs) {
-                                // sends old messages to the user that just connected
-                                io.to(socketID).emit('chat message', doc.userid, doc.message);
-                            }
-                        });
-                    });
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
 
-                    // does stuff when user connects to private chat
-                    socket.on('user-connected-private', function (target, name, socketID) {
-                        socket.join(name + target);
+//Edit user
+app.post('/profile/:olduser', async (request, response) => {
+    let db = request.db;
+    let userTabell = db.get('users');
 
-                        // gets old messages sent by user
-                        db.get('private-messages').find({
-                            senderID: name,
-                            receiverID: target
-                        }).then((user_messages) => {
-                            // gets old messages sent by target
-                            db.get('private-messages').find({
-                                senderID: target,
-                                receiverID: name
-                            }).then((target_messages) => {
-                                // combine messages to one array
-                                let allMessages = user_messages.concat(target_messages)
+    try {
+        if (!request.files) {
+            //Om ingen bild skickas med gör något
+            response.send(404);
 
-                                // sort array by time
-                                allMessages.sort(function (a, b) {
-                                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
-                                });
+        } else {
+            //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
+            let newUserName = request.body.username;
+            let newEmail = request.body.useremail;
+            let oldUserName = request.params.olduser;
+            let newImageName = request.files.profile_image;
+            newImageName.mv('./public/images/' + newImageName.name);
+            userTabell.update({
+                'username': oldUserName
+            }, {
+                $set: {
+                    'username': newUserName,
+                    'email': newEmail,
+                    'profilePicturePath': "/images/" + newImageName.name
+                }
+            }, (err, item) => {
+                if (err) {
+                    // If it failed, return error
+                    response.send("There was a problem adding the information to the database.");
+                } else {
+                    //profile_pic.mv('./images/' + profile_pic.name);
+                    response.redirect("/profile/" + newUserName);
+                }
+            });
+        }
 
-                                // sort array by date
-                                allMessages.sort(function (a, b) {
-                                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
-                                });
+    } catch (err) {
+        response.status(500).send(err);
+    }
 
-                                // sends old messages to the user that just connected
-                                for (doc of allMessages) {
-                                    io.to(socketID).emit('private message', doc.senderID, doc.message);
-                                }
-                            })
-                        })
-                    });
+});
 
-                    // add new chat room to database
-                    socket.on('create-chat-room', function (newChatRoom) {
-                        // checks if chat room already exists
-                        db.get('chatrooms').findOne({
-                            roomname: newChatRoom.roomname
-                        }).then((result) => {
-                            if (result == null) {
-                                db.get('chatrooms').insert(newChatRoom);
-                                socket.emit('create-status', 'Chat room was created, refresh page')
-                            } else {
-                                socket.emit('create-status', 'A room with this name already exists')
-                            }
-                        });
-                    });
+//Delete user
+app.get('/profile/deleteuser/:user', (request, response) => {
+    let db = request.db;
+    let userTabell = db.get('users');
 
-                    // receives message data from client
-                    socket.on('chat message', function (room, data) {
-                        // store data in database
-                        db.get('messages').insert({
-                            'userid': data.userid,
-                            'chatroomid': room,
-                            'date': new Date().toLocaleDateString('sv'),
-                            'time': new Date().toLocaleTimeString('sv', {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }),
-                            'message': data.message
-                        });
-
-                        // sends message to client
-                        io.in(room).emit('chat message', data.userid, data.message);
-                    });
-
-                    // receives private message from client
-                    socket.on('private message', function (target, data) {
-                        db.get('private-messages').insert({
-                            'senderID': data.userid,
-                            'receiverID': target,
-                            'date': new Date().toLocaleDateString('sv'),
-                            'time': new Date().toLocaleTimeString('sv', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                second: '2-digit'
-                            }),
-                            'message': data.message
-                        });
-
-                        // sends message to client
-                        io.in(target + data.userid).emit('private message', data.userid, data.message);
-                        io.in(data.userid + target).emit('private message', data.userid, data.message);
-                    });
-
-                    // does stuff when user disconnects
-                    socket.on('disconnect', function (room, name) {
-                        // maybe something here...
-                    });
-                });
-
-                app.get('/logout', (req, res) => {
-                    req.session.destroy();
-                    res.redirect('/login');
-                });
-
-                //Edit user
-                app.post('/profile/:olduser', async (request, response) => {
-                    let db = request.db;
-                    let userTabell = db.get('users');
-
-                    try {
-                        if (!request.files) {
-                            //Om ingen bild skickas med gör något
-                            response.send(404);
-
-                        } else {
-                            //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
-                            let newUserName = request.body.username;
-                            let newEmail = request.body.useremail;
-                            let oldUserName = request.params.olduser;
-                            let newImageName = request.files.profile_image;
-                            newImageName.mv('./public/images/' + newImageName.name);
-                            userTabell.update({
-                                'username': oldUserName
-                            }, {
-                                $set: {
-                                    'username': newUserName,
-                                    'email': newEmail,
-                                    'profilePicturePath': "/images/" + newImageName.name
-                                }
-                            }, (err, item) => {
-                                if (err) {
-                                    // If it failed, return error
-                                    response.send("There was a problem adding the information to the database.");
-                                } else {
-                                    //profile_pic.mv('./images/' + profile_pic.name);
-                                    response.redirect("/profile/" + newUserName);
-                                }
-                            });
-                        }
-
-                    } catch (err) {
-                        response.status(500).send(err);
-                    }
-
-                });
-
-                //Delete user
-                app.get('/profile/deleteuser/:user', (request, response) => {
-                    let db = request.db;
-                    let userTabell = db.get('users');
-
-                    let userToDelete = request.params.user;
-                    console.log(userToDelete);
-                    userTabell.findOneAndDelete({
-                        'username': userToDelete
-                    }, (err, item) => {
-                        if (err) {
-                            // If it failed, return error
-                            response.send("There was a problem adding the information to the database.");
-                        } else {
-                            // And forward to success pages
-                            response.redirect("/login");
-                        }
-                    })
-                });
+    let userToDelete = request.params.user;
+    console.log(userToDelete);
+    userTabell.findOneAndDelete({
+        'username': userToDelete
+    }, (err, item) => {
+        if (err) {
+            // If it failed, return error
+            response.send("There was a problem adding the information to the database.");
+        } else {
+            // And forward to success pages
+            response.redirect("/login");
+        }
+    })
+});
 
 
 
-                server.listen(httpPort);
+server.listen(httpPort);
