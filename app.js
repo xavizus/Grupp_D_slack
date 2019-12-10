@@ -271,6 +271,11 @@ io.on('connection', function (socket) {
     });
 });
 
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
+
 //Edit user
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
