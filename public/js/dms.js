@@ -3,9 +3,8 @@ $(function () {
 
     // when user connects
     socket.on('connect', () => {
-        socket.emit('user-connected', roomName, currentUser, socket.id);
+        socket.emit('user-connected-private', target, currentUser, socket.id);
     });
-
 
     // create chat room input form
     $('#createChatRoom').submit(function (e) {
@@ -29,7 +28,7 @@ $(function () {
         e.preventDefault();
 
         // sends data to server
-        socket.emit('chat message', roomName, {
+        socket.emit('private message', target, {
             'userid': currentUser,
             'message': $('#m').val()
         });
@@ -40,7 +39,7 @@ $(function () {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function (user, message) {
+    socket.on('private message', function (user, message) {
         $('#messages').append($('<li>').html('<a href="/profile/' + user + '">' + user + '</a> skrev: ' + message));
     });
 });

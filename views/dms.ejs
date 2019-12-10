@@ -3,15 +3,12 @@
 
 <head>
     <title>Socket.IO chat</title>
-    <% include ./partials/header %>
     <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
-    <% include ./partials/logout %>
-   
 </head>
 
 <body>
     <script>
-        const roomName = '<%= roomName %>';
+        const target = '<%= target %>';
         const currentUser = '<%=currentUser%>';
         const allUsers = '<%= allUsers %>';
     </script>
@@ -50,7 +47,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-    <script src="/js/chatroom.js"></script>
+    <script src="/js/dms.js"></script>
 </body>
 
 </html>

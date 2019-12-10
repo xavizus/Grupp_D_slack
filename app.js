@@ -37,7 +37,7 @@ let httpPort = process.env.npm_package_config_port || 8080;
 let apiURL = `http://localhost:${httpPort}/api/v1`
 
 let mongoDB_URI = `${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_SERVER}/${process.env.MONGODB_DATABASE}?authSource=${process.env.MONGODB_DATABASE}&w=1`
-// Monk DB-connection
+    // Monk DB-connection
 const db = monk(mongoDB_URI);
 
 let store = new MongoDBStore({
@@ -62,7 +62,7 @@ app.use(fileUpload({
 }));
 
 // make it possible to use database connection elsewhere.
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     req.db = db;
     next();
 });
@@ -148,8 +148,8 @@ app.post('/newAccount', (request, response) => {
         email: email,
         username: username
     };
-    bcrypt.genSalt(10, function (err, salt) {
-        bcrypt.hash(password, salt, function (err, hash) {
+    bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(password, salt, (err, hash) => {
             data.password = hash;
             fetch(`${apiURL}/addUser`, {
                 method: 'POST',
@@ -169,13 +169,15 @@ app.post('/newAccount', (request, response) => {
 });
 
 // 
-app.get('/profile/:name', function (req, res) {
+app.get('/profile/:name', function(req, res) {
     let nameToShow = req.params.name;
     console.log(nameToShow);
     console.log(req.session.username);
     let db = req.db;
     let usersCollection = db.get('users');
-    usersCollection.find({"username": nameToShow}, {}, (err, data) => {
+    usersCollection.find({
+        "username": nameToShow
+    }, {}, (err, data) => {
         if (data.length != 0) {
             res.render('./profile.ejs', {
                 "data": data
@@ -186,13 +188,13 @@ app.get('/profile/:name', function (req, res) {
     })
 })
 
-app.get('/profile/edituser/:username', async function (req, res) {
+app.get('/profile/edituser/:username', async function(req, res) {
     var db = req.db;
     var collection = db.get('users');
     //console.log(req.params.username);
     collection.findOne({
         username: req.params.username
-    }, function (e, data) {
+    }, function(e, data) {
         //console.log(data);
         res.render('editCurrentUser', {
             "data": data
@@ -201,25 +203,63 @@ app.get('/profile/edituser/:username', async function (req, res) {
 });
 
 // Chatroom
-app.get('/chatroom', function (req, res) {
+app.get('/chatroom', function(req, res) {
     res.redirect('chatroom/General');
 });
 
-app.get('/chatroom/:room', function (req, res) {
-    //Spara loginnamn i variabel och skicka med den i view
-    let currentUser = req.session.username;
-    // checks if the chatroom the user is trying to access exists
+app.get('/chatroom/:room', function(req, res) {
+    if (!req.session.authenticated) {
+        res.redirect('/login');
+    }
+    // checks if the chatroom the user is trying to access (/:room) exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
-    }).then((docs) => {
-        if (docs == null) {
+    }).then((result) => {
+        if (result == null) {
             return res.redirect('/chatroom/General');
         } else {
-            db.get('chatrooms').find({}).then((docs) => {
-                res.render('chatroom', {
-                    'chatrooms': docs,
-                    roomName: req.params.room,
-                    currentUser : currentUser
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    // render the page
+                    res.render('chatroom', {
+                        'chatrooms': chatRooms,
+                        roomName: req.params.room,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
+                });
+            });
+        }
+    });
+
+});
+
+// Direct messages
+app.get('/dms', function(req, res) {
+    res.redirect('chatroom/General');
+});
+
+app.get('/dms/:target', function(req, res) {
+    // check if user (/:target) exists
+    db.get('users').findOne({
+        username: req.params.target
+    }).then((result) => {
+        if (result == null) {
+            return res.redirect('/chatroom/General');
+        } else {
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    res.render('dms', {
+                        // render the page
+                        'chatrooms': chatRooms,
+                        target: req.params.target,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
                 });
             });
         }
@@ -227,9 +267,9 @@ app.get('/chatroom/:room', function (req, res) {
 });
 
 // WebSocket
-io.on('connection', function (socket) {
+io.on('connection', function(socket) {
     // does stuff when user connects
-    socket.on('user-connected', function (room, name, socketID) {
+    socket.on('user-connected', function(room, name, socketID) {
         socket.join(room);
         // sends old chatroom messages from database to client
         db.get('messages').find({
@@ -242,13 +282,58 @@ io.on('connection', function (socket) {
         });
     });
 
+    // does stuff when user connects to private chat
+    socket.on('user-connected-private', function(target, name, socketID) {
+        socket.join(name + target);
+
+        // gets old messages sent by user
+        db.get('private-messages').find({
+            senderID: name,
+            receiverID: target
+        }).then((user_messages) => {
+            // gets old messages sent by target
+            db.get('private-messages').find({
+                senderID: target,
+                receiverID: name
+            }).then((target_messages) => {
+                // combine messages to one array
+                let allMessages = user_messages.concat(target_messages)
+
+                // sort array by time
+                allMessages.sort(function(a, b) {
+                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
+                });
+
+                // sort array by date
+                allMessages.sort(function(a, b) {
+                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
+                });
+
+                // sends old messages to the user that just connected
+                for (doc of allMessages) {
+                    io.to(socketID).emit('private message', doc.senderID, doc.message);
+                }
+            })
+        })
+    });
+
     // add new chat room to database
-    socket.on('create-chat-room', function (newChatRoom) {
-        db.get('chatrooms').insert(newChatRoom);
+    socket.on('create-chat-room', function(newChatRoom) {
+        // checks if chat room already exists
+        db.get('chatrooms').findOne({
+            roomname: newChatRoom.roomname
+        }).then((result) => {
+            if (result == null) {
+                db.get('chatrooms').insert(newChatRoom);
+                socket.emit('create-status', 'Chat room was created, refresh page')
+            } else {
+                socket.emit('create-status', 'A room with this name already exists')
+            }
+        });
     });
 
     // receives message data from client
-    socket.on('chat message', function (room, data) {
+    socket.on('chat message', function(room, data) {
         // store data in database
         db.get('messages').insert({
             'userid': data.userid,
@@ -265,8 +350,27 @@ io.on('connection', function (socket) {
         io.in(room).emit('chat message', data.userid, data.message);
     });
 
+    // receives private message from client
+    socket.on('private message', function(target, data) {
+        db.get('private-messages').insert({
+            'senderID': data.userid,
+            'receiverID': target,
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }),
+            'message': data.message
+        });
+
+        // sends message to client
+        io.in(target + data.userid).emit('private message', data.userid, data.message);
+        io.in(data.userid + target).emit('private message', data.userid, data.message);
+    });
+
     // does stuff when user disconnects
-    socket.on('disconnect', function (room, name) {
+    socket.on('disconnect', function(room, name) {
         // maybe something here...
     });
 });
@@ -277,7 +381,7 @@ app.get('/logout', (req, res) => {
 });
 
 //Edit user
-app.post('/profile/:olduser', async (request, response) => {
+app.post('/profile/:olduser', async(request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
 
