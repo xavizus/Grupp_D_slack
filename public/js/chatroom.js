@@ -18,7 +18,9 @@ $(function () {
             members: []
         });
 
-        alert('Chat room was created, refresh page');
+        socket.on('create-status', (msg) => {
+            alert(msg);
+        });
     });
 
     // message input form

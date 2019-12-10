@@ -3,7 +3,7 @@ $(function () {
 
     // when user connects
     socket.on('connect', () => {
-        socket.emit('user-connected-private', currentUser, socket.id);
+        socket.emit('user-connected-private', target, currentUser, socket.id);
     });
 
 
@@ -18,7 +18,9 @@ $(function () {
             members: []
         });
 
-        alert('Chat room was created, refresh page');
+        socket.on('create-status', (msg) => {
+            alert(msg);
+        });
     });
 
     // message input form
@@ -27,7 +29,7 @@ $(function () {
         e.preventDefault();
 
         // sends data to server
-        socket.emit('private message', {
+        socket.emit('private message', target, {
             'userid': currentUser,
             'message': $('#m').val()
         });
