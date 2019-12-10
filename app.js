@@ -149,7 +149,7 @@ app.post('/newAccount', (request, response) => {
         username: username
     };
     bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(password, salt,(err, hash) => {
+        bcrypt.hash(password, salt, (err, hash) => {
             data.password = hash;
             fetch(`${apiURL}/addUser`, {
                 method: 'POST',
@@ -175,7 +175,9 @@ app.get('/profile/:name', function (req, res) {
     console.log(req.session.username);
     let db = req.db;
     let usersCollection = db.get('users');
-    usersCollection.find({"username": nameToShow}, {}, (err, data) => {
+    usersCollection.find({
+        "username": nameToShow
+    }, {}, (err, data) => {
         if (data.length != 0) {
             res.render('./profile.ejs', {
                 "data": data
@@ -210,7 +212,7 @@ app.get('/chatroom/:room', function (req, res) {
     db.get('users').find({}).then((docs) => {
         req.users = docs;
     });
-    
+
     // checks if the chatroom the user is trying to access exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
@@ -231,6 +233,25 @@ app.get('/chatroom/:room', function (req, res) {
     });
 });
 
+app.get('/dms', function (req, res) {
+    res.redirect('chatroom/General');
+});
+
+app.get('/dms/:users', function (req, res) {
+    // 
+    db.get('users').find({}).then((docs1) => {
+        //req.users = docs;
+        db.get('chatrooms').find({}).then((docs2) => {
+            res.render('dms', {
+                'chatrooms': docs2,
+                //roomName: req.params.room,
+                currentUser: req.session.username,
+                allUsers: docs1
+            });
+        });
+    });
+});
+
 // WebSocket
 io.on('connection', function (socket) {
     // does stuff when user connects
@@ -247,6 +268,10 @@ io.on('connection', function (socket) {
         });
     });
 
+    socket.on('user-connected-private', function (name, socketID) {
+        socket.join('private');
+    });
+
     // add new chat room to database
     socket.on('create-chat-room', function (newChatRoom) {
         db.get('chatrooms').insert(newChatRoom);
@@ -255,6 +280,8 @@ io.on('connection', function (socket) {
     // receives message data from client
     socket.on('chat message', function (room, data) {
         // store data in database
+
+        /*
         db.get('messages').insert({
             'userid': data.userid,
             'chatroomid': room,
@@ -265,6 +292,7 @@ io.on('connection', function (socket) {
             }),
             'message': data.message
         });
+        */
 
         // sends message to client
         io.in(room).emit('chat message', data.userid, data.message);
