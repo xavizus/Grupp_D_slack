@@ -252,7 +252,6 @@ app.get('/chatroom/:room', function (req, res) {
             });
         }
     });
-
 });
 
 // Direct messages
@@ -399,22 +398,50 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
-//Edit user
+//Edit user ... Denna kod kan förbättras(kanske skicka med filnamnet på något sätt)
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
-
-    try {
+    
+    
+    try {   
         if (!request.files) {
-            //Om ingen bild skickas med gör något
-            response.send(404);
-
+            console.log("ingen bild skickades med");
+            //Om ingen bild skickas med, uppdatera inte bilden
+                
+                let newUserName = request.body.username;
+                let newEmail = request.body.useremail;
+                let oldUserName = request.params.olduser;
+                request.session.username = newUserName;
+                request.session.email = newEmail;
+                console.log(request.session.username);
+                userTabell.update({
+                    'username': oldUserName
+                }, {
+                    $set: {
+                        'username': newUserName,
+                        'email': newEmail   
+                    }
+                }, (err, item) => {
+                    if (err) {
+                        // If it failed, return error
+                        response.send("There was a problem adding the information to the database.");
+                    } else {
+                        //profile_pic.mv('./images/' + profile_pic.name);
+                        response.redirect("/profile/" + newUserName);
+                    }
+                });
         } else {
+            console.log("en bild skickades med");
             //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
+           
+            let newImageName = request.files.profile_image;
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
             let oldUserName = request.params.olduser;
-            let newImageName = request.files.profile_image;
+            request.session.username = newUserName;
+            request.session.email = newEmail;
+            console.log(request.session.username);
             newImageName.mv('./public/images/' + newImageName.name);
             userTabell.update({
                 'username': oldUserName
@@ -434,11 +461,9 @@ app.post('/profile/:olduser', async (request, response) => {
                 }
             });
         }
-
     } catch (err) {
         response.status(500).send(err);
     }
-
 });
 
 //Delete user
