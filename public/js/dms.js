@@ -6,7 +6,6 @@ $(function () {
         socket.emit('user-connected-private', target, currentUser, socket.id);
     });
 
-
     // create chat room input form
     $('#createChatRoom').submit(function (e) {
         // prevents page reloading

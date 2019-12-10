@@ -208,29 +208,29 @@ app.get('/chatroom', function (req, res) {
 });
 
 app.get('/chatroom/:room', function (req, res) {
-    // 
-    db.get('users').find({}).then((users) => {
-
-    // checks if the chatroom the user is trying to access exists
+    // checks if the chatroom the user is trying to access (/:room) exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
-    }).then((docs) => {
-        if (docs == null) {
+    }).then((result) => {
+        if (result == null) {
             return res.redirect('/chatroom/General');
         } else {
-            db.get('chatrooms').find({}).then((chatRooms) => {
-                console.log(users)
-                console.log(chatRooms)
-                res.render('chatroom', {
-                    'chatrooms': chatRooms,
-                    roomName: req.params.room,
-                    currentUser: req.session.username,
-                    allUsers: users
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    // render the page
+                    res.render('chatroom', {
+                        'chatrooms': chatRooms,
+                        roomName: req.params.room,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
                 });
             });
         }
     });
-    });
+
 });
 
 // Direct messages
@@ -239,15 +239,27 @@ app.get('/dms', function (req, res) {
 });
 
 app.get('/dms/:target', function (req, res) {
-    db.get('users').find({}).then((users) => {
-        db.get('chatrooms').find({}).then((chatRooms) => {
-            res.render('dms', {
-                'chatrooms': chatRooms,
-                target: req.params.target,
-                currentUser: req.session.username,
-                allUsers: users
+    // check if user (/:target) exists
+    db.get('users').findOne({
+        username: req.params.target
+    }).then((result) => {
+        if (result == null) {
+            return res.redirect('/chatroom/General');
+        } else {
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    res.render('dms', {
+                        // render the page
+                        'chatrooms': chatRooms,
+                        target: req.params.target,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
+                });
             });
-        });
+        }
     });
 });
 
@@ -267,13 +279,47 @@ io.on('connection', function (socket) {
         });
     });
 
+    // does stuff when user connects to private chat
     socket.on('user-connected-private', function (target, name, socketID) {
         socket.join(name + target);
+
+        // gets old messages sent by user
+        db.get('private-messages').find({
+            senderID: name,
+            receiverID: target
+        }).then((user_messages) => {
+            // gets old messages sent by target
+            db.get('private-messages').find({
+                senderID: target,
+                receiverID: name
+            }).then((target_messages) => {
+                // combine messages to one array
+                let allMessages = user_messages.concat(target_messages)
+
+                // sort array by time
+                allMessages.sort(function (a, b) {
+                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
+                });
+
+                // sort array by date
+                allMessages.sort(function (a, b) {
+                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
+                });
+
+                // sends old messages to the user that just connected
+                for (doc of allMessages) {
+                    io.to(socketID).emit('private message', doc.senderID, doc.message);
+                }
+            })
+        })
     });
 
     // add new chat room to database
     socket.on('create-chat-room', function (newChatRoom) {
-        db.get('chatrooms').findOne({roomname: newChatRoom.roomname}).then((result) => {
+        // checks if chat room already exists
+        db.get('chatrooms').findOne({
+            roomname: newChatRoom.roomname
+        }).then((result) => {
             if (result == null) {
                 db.get('chatrooms').insert(newChatRoom);
                 socket.emit('create-status', 'Chat room was created, refresh page')
@@ -286,7 +332,6 @@ io.on('connection', function (socket) {
     // receives message data from client
     socket.on('chat message', function (room, data) {
         // store data in database
-
         db.get('messages').insert({
             'userid': data.userid,
             'chatroomid': room,
@@ -304,8 +349,19 @@ io.on('connection', function (socket) {
 
     // receives private message from client
     socket.on('private message', function (target, data) {
-        
+        db.get('private-messages').insert({
+            'senderID': data.userid,
+            'receiverID': target,
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }),
+            'message': data.message
+        });
 
+        // sends message to client
         io.in(target + data.userid).emit('private message', data.userid, data.message);
         io.in(data.userid + target).emit('private message', data.userid, data.message);
     });

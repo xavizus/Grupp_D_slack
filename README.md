@@ -16,7 +16,7 @@ Trello:
 
 # G-krav
 - [x] Kunna sätta upp chat-rum
-- [ ] Kunna sätta upp privata chattar med en enskild person
+- [x] Kunna sätta upp privata chattar med en enskild person
 - [x] Skapa konto/logga in med det kontot (email och alias)
 - [x] Kunna ladda upp en fil i valfritt användningsområde
 - [x] Spara meddelanden, konton osv i databas
