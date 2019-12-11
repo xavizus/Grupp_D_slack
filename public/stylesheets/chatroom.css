@@ -13,7 +13,7 @@ body {
     padding: 3px;
     position: fixed;
     bottom: 0;
-    width: 100%;
+    width: 40%;
 }
 
 #sendMessage input {
@@ -42,4 +42,19 @@ body {
 
 #messages li:nth-child(odd) {
     background: #eee;
+}
+
+#chat-container {
+    overflow: auto;
+    height: 700px;
+}
+
+#direct-messages {
+    overflow: auto;
+    height: 400px;
+}
+
+#All-users {
+    overflow: auto;
+    height: 700px;
 }

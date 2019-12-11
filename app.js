@@ -183,57 +183,61 @@ app.post('/newAccount', (request, response) => {
     });
 });
 
-// 
-app.get('/profile/:name', async function(req, res) {
+//Send profile info to api and return a value from the database, then check what ejs to show
+app.get('/profile/:name', async function (req, res) {
     let sessionUserName = req.session.username;
-    let currentUserNAme = req.params.name;
-    let db = req.db;
-    let usersCollection = db.get('users');
+    let currentUserName = req.params.name;
 
-    if (sessionUserName === currentUserNAme) {
+    let result = await fetch(`${apiURL}/getProfileData/${currentUserName}`)
+    .then((response => response.json()));
+   
+    if (sessionUserName === currentUserName) {
         console.log("visa mainprofile");
-        usersCollection.find({
-            "username": currentUserNAme
-        }, {}, (err, data) => {
-
-            if (data.length != 0) {
+            if (result.results.length != 0) {
                 res.render('./profile.ejs', {
-                    "data": data
+                    "data": result.results
                 });
             } else {
                 res.send("user does not exist");
             }
-        })
-
-    } else if (sessionUserName !== currentUserNAme) {
+    } else if (sessionUserName !== currentUserName) {
         console.log("visa visitorprofile");
-        usersCollection.find({
-            "username": currentUserNAme
-        }, {}, (err, data) => {
-            if (data.length != 0) {
+            if (result.results.length != 0) {
                 res.render('./visitorProfile.ejs', {
-                    "data": data
+                    "data": result.results
                 });
-
             } else {
-                res.send("user does not exist");
+                res.send("the user you look for does not exist");
             }
-        })
     }
 })
 
-app.get('/profile/edituser/:username', async function(req, res) {
-    var db = req.db;
-    var collection = db.get('users');
-    //console.log(req.params.username);
-    collection.findOne({
-        username: req.params.username
-    }, function(e, data) {
-        //console.log(data);
+app.get('/profile/edituser/:username', async (req, res) => {
+    let currentUserName = req.params.username;
+
+    let result = await fetch(`${apiURL}/editProfileData/${currentUserName}`)
+    .then((response => response.json()));
+    if (result.results.length != 0) {
         res.render('editCurrentUser', {
-            "data": data
+            "data": result.results
         });
-    });
+    } else {
+        res.send("user you want to edit does not exist");
+    }
+});
+
+//Send delete info to api and destroy session if it returns with a deleted value
+app.get('/profile/deleteuser/:user', async (request, response) => {
+    let currentUserName = request.params.user;
+    let result = await fetch(`${apiURL}/deleteProfile/${currentUserName}`)
+    .then((response => response.json()));
+
+    if(result.results.length !== 0) {
+     request.session.destroy();
+     response.redirect('/login');
+    }else {
+        response.redirect('/');
+    }  
 });
 
 // Chatroom
@@ -426,6 +430,8 @@ app.post('/profile/:olduser', async(request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
 
+    fetch()
+
     try {
         let newUserName = request.body.username;
         let newEmail = request.body.useremail;
@@ -462,25 +468,7 @@ app.post('/profile/:olduser', async(request, response) => {
     }
 });
 
-//Delete user
-app.get('/profile/deleteuser/:user', (request, response) => {
-    let db = request.db;
-    let userTabell = db.get('users');
 
-    let userToDelete = request.params.user;
-    console.log(userToDelete);
-    userTabell.findOneAndDelete({
-        'username': userToDelete
-    }, (err, item) => {
-        if (err) {
-            // If it failed, return error
-            response.send("There was a problem adding the information to the database.");
-        } else {
-            // And forward to success pages
-            response.redirect("/login");
-        }
-    })
-});
 
 
 

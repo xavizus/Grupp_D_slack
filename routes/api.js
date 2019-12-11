@@ -229,4 +229,62 @@ router.post('/updateStatus',(request,response) => {
     });
 });
 
+//Jonas api testing
+router.get('/getProfileData/:userName', (req, res) => {
+    currentUserName = req.params.userName;
+    let db = req.db;
+    let usersCollection = db.get('users');
+    
+    usersCollection.find({
+        "username": currentUserName
+    }, {}, (err, data) => {
+        if(err) {
+            res.send("user does not exist");
+        } else {
+            let responseObject = {
+                results : data
+            };
+            res.send(responseObject);
+        }
+        
+    })
+});
+
+router.get('/editProfileData/:userName', (req, res) => {
+    let usernameToEdit = req.params.userName;
+    let db = req.db;
+    let usersCollection = db.get('users');
+
+    usersCollection.findOne({
+        username: usernameToEdit
+    }, (err, data) => {
+        if(err) {
+            res.send("error accured when editing");
+        } else {
+            let responseObject = {results : data};
+            res.send(responseObject);
+        }
+    });
+});
+
+router.get('/deleteProfile/:userToDelete', (req, res) => {
+    let userToDelete = req.params.userToDelete;
+    let db = req.db;
+    let userTabell = db.get('users');
+
+    userTabell.findOneAndDelete({
+        username: userToDelete
+    }, (err, data) => {
+        if (err) {
+            // If it failed, return error
+            response.send("There was a problem deleting the information to the database.");
+        } else {
+            let responseObject = {
+                results : data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;

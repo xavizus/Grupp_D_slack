@@ -5,7 +5,7 @@
     <title>Socket.IO chat</title>
     <% include ./partials/header %>
     <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
-    <% include ./partials/logout %>
+    
 
 </head>
 
@@ -15,8 +15,11 @@
         const currentUser = '<%=currentUser%>';
         const userId = '<%=userId%>';
     </script>
+    <div class="container-fluid">
     <div class="row">
-        <div id="chatrooms" class="col-2">
+            
+        <div id="chatrooms" class="col-sm-2">
+                <% include ./partials/logout %>
             <h3>Create chat room</h3>
             <form id="createChatRoom" action="">
                 <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
@@ -32,18 +35,26 @@
                 <li><a href="/chatroom/<%= chatroom.roomname %>"> <%= chatroom.roomname %> </a></li>
                 <% } %>
             </ul>
-
-            <h3>Direct messages</h3>
-            <% include ./partials/online %>
+            <div id="direct-messages">
+                <h3>Direct messages</h3>
+                <% include ./partials/online %>
+            </div>
         </div>
-        <div id="chat-container" class="col">
-            <ul id="messages"></ul>
-            <form id="sendMessage" action="">
-                <input id="m" autocomplete="off"><button>Send</button>
+        <div id="chat-container" class="col-sm-8">
+                <h1>roomname here</h1>
+            <ul id="messages">
+                
+            </ul>
+            <form id="sendMessage" action="" class="">
+                    <input id="m" autocomplete="off"><button>Send</button>
             </form>
         </div>
+        <div id="All-users" class="col-sm-2">
+            <h3>All users</h3>
+            <% include ./partials/online %>
+        </div>
     </div>
-
+</div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/js/chatroom.js"></script>
