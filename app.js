@@ -115,10 +115,10 @@ app.post('/login', async (request, response) => {
             let userInfoData = await fetch(`${apiURL}/getUserInfo/${email}`)
                 .then((response => response.json()));
             request.session.username = userInfoData.result.username;
-            request.session.userID = userInfoData.result._id;
+            request.session.userId = userInfoData.result._id;
 
             let dataToSend = {
-                userId: request.session.userID,
+                userId: request.session.userId,
                 status: "Online"
             };
 
@@ -245,8 +245,6 @@ app.get('/chatroom/:room', async function (req, res) {
     // Get all current status.
     let allUsersStatuses = await fetch(`${apiURL}/status`)
         .then(response => response.json());
-    //Spara loginnamn i variabel och skicka med den i view
-    let currentUser = req.session.username;
 
     // checks if the chatroom the user is trying to access (/:room) exists
     db.get('chatrooms').findOne({
@@ -262,6 +260,7 @@ app.get('/chatroom/:room', async function (req, res) {
                     'chatrooms': chatRooms,
                     roomName: req.params.room,
                     currentUser: req.session.username,
+                    userId: req.session.userId,
                     usersStatuses: allUsersStatuses.result
                 });
             });
@@ -302,7 +301,8 @@ app.get('/dms/:target', function (req, res) {
 // WebSocket
 io.on('connection', function (socket) {
     // does stuff when user connects
-    socket.on('user-connected', function (room, name, socketID) {
+    socket.on('user-connected', function (room, name, socketID, userId) {
+        socket.userId = userId;
         socket.join(room);
         // sends old chatroom messages from database to client
         db.get('messages').find({
@@ -313,6 +313,7 @@ io.on('connection', function (socket) {
                 io.to(socketID).emit('chat message', doc.userid, doc.message);
             }
         });
+       io.emit('status-change', socket.userId,'Online');
     });
 
     // does stuff when user connects to private chat
@@ -403,8 +404,8 @@ io.on('connection', function (socket) {
     });
 
     // does stuff when user disconnects
-    socket.on('disconnect', function (room, name) {
-        // maybe something here...
+    socket.on('disconnect', (userId, status) => {
+        io.emit('status-change', socket.userId, 'Offline');
     });
 });
 
