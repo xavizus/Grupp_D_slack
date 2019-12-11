@@ -28,5 +28,5 @@ Lösa 3 av följande krav:
 - [ ] Stöd för emojis
 - [ ] Mentions
 - [ ] Uppdatera/radera sina egna chattmeddelanden
-- [ ] Indikera vilka som är online (uppkopplad mot servern)
+- [x] Indikera vilka som är online (uppkopplad mot servern)
 - [ ] Roller
