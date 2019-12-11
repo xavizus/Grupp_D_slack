@@ -394,13 +394,11 @@ io.on('connection', function (socket) {
     });
 
     // does stuff when user disconnects
-    socket.on('disconnect', (userId, status) => {
+    socket.on('disconnect', () => {
         io.emit('status-change', socket.userId, 'Offline');
-        fetch(`${apiURL}/`)
-
 
         let dataToSend = {
-            userId: userId,
+            userId: socket.userId,
             status: "Offline"
         };
 
