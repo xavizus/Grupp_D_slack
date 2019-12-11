@@ -335,12 +335,7 @@ io.on('connection', function (socket) {
 
                 // sort array by time
                 allMessages.sort(function (a, b) {
-                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
-                });
-
-                // sort array by date
-                allMessages.sort(function (a, b) {
-                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
+                    return new Date(a.dateAndTime) - new Date(b.dateAndTime);
                 });
 
                 // sends old messages to the user that just connected
@@ -389,12 +384,7 @@ io.on('connection', function (socket) {
         db.get('private-messages').insert({
             'senderID': data.userid,
             'receiverID': target,
-            'date': new Date().toLocaleDateString('sv'),
-            'time': new Date().toLocaleTimeString('sv', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }),
+            'dateAndTime': new Date(),
             'message': data.message
         });
 
