@@ -34,14 +34,10 @@
         </ul>
 
         <h3>Direct messages</h3>
-        <ul>
-            <% for (user of allUsers) { %>
-            <li><a href="/dms/<%= user.username %>"> <%= user.username %> </a></li>
-            <% } %>
-        </ul>
+        <% include ./partials/online %>
     </div>
 
-    <% include ./partials/online %>
+    
 
     <div id="chat-container">
         <ul id="messages"></ul>

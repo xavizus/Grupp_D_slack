@@ -122,7 +122,7 @@ app.post('/login', async (request, response) => {
                 status: "Online"
             };
 
-            let receivedData = await fetch(`${apiURL}/updateStatus`,{
+            let receivedData = await fetch(`${apiURL}/updateStatus`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -130,7 +130,7 @@ app.post('/login', async (request, response) => {
                 body: JSON.stringify(dataToSend)
             });
 
-            if(!receivedData.result == "OK") {
+            if (!receivedData.result == "OK") {
                 response.send(receivedData.message);
             }
             // Save the session so you can use it later.
@@ -247,7 +247,7 @@ app.get('/chatroom/:room', async function (req, res) {
         .then(response => response.json());
     //Spara loginnamn i variabel och skicka med den i view
     let currentUser = req.session.username;
-    
+
     // checks if the chatroom the user is trying to access (/:room) exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
@@ -255,18 +255,15 @@ app.get('/chatroom/:room', async function (req, res) {
         if (result == null) {
             return res.redirect('/chatroom/General');
         } else {
-            // gets users from database
-            db.get('users').find({}).then((users) => {
-                // gets chatrooms from database
-                db.get('chatrooms').find({}).then((chatRooms) => {
-                    // render the page
-                    res.render('chatroom', {
-                        'chatrooms': chatRooms,
-                        roomName: req.params.room,
-                        currentUser: req.session.username,
-                        allUsers: users,
-                        usersStatuses: allUsersStatuses.result
-                    });
+            // gets chatrooms from database
+            db.get('chatrooms').find({}).then((chatRooms) => {
+                // render the page
+                res.render('chatroom', {
+                    'chatrooms': chatRooms,
+                    roomName: req.params.room,
+                    currentUser: req.session.username,
+                    allUsers: users,
+                    usersStatuses: allUsersStatuses.result
                 });
             });
         }
@@ -421,39 +418,39 @@ app.get('/logout', (req, res) => {
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
-    
-    
-    try {   
+
+
+    try {
         if (!request.files) {
             console.log("ingen bild skickades med");
             //Om ingen bild skickas med, uppdatera inte bilden
-                
-                let newUserName = request.body.username;
-                let newEmail = request.body.useremail;
-                let oldUserName = request.params.olduser;
-                request.session.username = newUserName;
-                request.session.email = newEmail;
-                console.log(request.session.username);
-                userTabell.update({
-                    'username': oldUserName
-                }, {
-                    $set: {
-                        'username': newUserName,
-                        'email': newEmail   
-                    }
-                }, (err, item) => {
-                    if (err) {
-                        // If it failed, return error
-                        response.send("There was a problem adding the information to the database.");
-                    } else {
-                        //profile_pic.mv('./images/' + profile_pic.name);
-                        response.redirect("/profile/" + newUserName);
-                    }
-                });
+
+            let newUserName = request.body.username;
+            let newEmail = request.body.useremail;
+            let oldUserName = request.params.olduser;
+            request.session.username = newUserName;
+            request.session.email = newEmail;
+            console.log(request.session.username);
+            userTabell.update({
+                'username': oldUserName
+            }, {
+                $set: {
+                    'username': newUserName,
+                    'email': newEmail
+                }
+            }, (err, item) => {
+                if (err) {
+                    // If it failed, return error
+                    response.send("There was a problem adding the information to the database.");
+                } else {
+                    //profile_pic.mv('./images/' + profile_pic.name);
+                    response.redirect("/profile/" + newUserName);
+                }
+            });
         } else {
             console.log("en bild skickades med");
             //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
-           
+
             let newImageName = request.files.profile_image;
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
