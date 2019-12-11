@@ -180,23 +180,42 @@ app.post('/newAccount', (request, response) => {
 });
 
 // 
-app.get('/profile/:name', function (req, res) {
-    let nameToShow = req.params.name;
-    console.log(nameToShow);
-    console.log(req.session.username);
+app.get('/profile/:name', async function (req, res) {
+    let sessionUserName = req.session.username;
+    let currentUserNAme = req.params.name;
     let db = req.db;
     let usersCollection = db.get('users');
-    usersCollection.find({
-        "username": nameToShow
-    }, {}, (err, data) => {
-        if (data.length != 0) {
-            res.render('./profile.ejs', {
-                "data": data
-            });
-        } else {
-            res.send("user does not exist");
-        }
-    })
+
+    if (sessionUserName === currentUserNAme) {
+        console.log("visa mainprofile");
+        usersCollection.find({
+            "username": currentUserNAme
+        }, {}, (err, data) => {
+
+            if (data.length != 0) {
+                res.render('./profile.ejs', {
+                    "data": data
+                });
+            } else {
+                res.send("user does not exist");
+            }
+        })
+
+    } else if (sessionUserName !== currentUserNAme) {
+        console.log("visa visitorprofile");
+        usersCollection.find({
+            "username": currentUserNAme
+        }, {}, (err, data) => {
+            if (data.length != 0) {
+                res.render('./visitorProfile.ejs', {
+                    "data": data
+                });
+
+            } else {
+                res.send("user does not exist");
+            }
+        })
+    }
 })
 
 app.get('/profile/edituser/:username', async function (req, res) {
@@ -219,24 +238,65 @@ app.get('/chatroom', function (req, res) {
 });
 
 app.get('/chatroom/:room', async function (req, res) {
+    // checks if the chatroom the user is trying to access exists
+    if (!req.session.authenticated) {
+        res.redirect('/login');
+    }
     // Get all current status.
     let allUsersStatuses = await fetch(`${apiURL}/status`)
         .then(response => response.json());
     //Spara loginnamn i variabel och skicka med den i view
     let currentUser = req.session.username;
-    // checks if the chatroom the user is trying to access exists
+    
+    // checks if the chatroom the user is trying to access (/:room) exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
-    }).then((docs) => {
-        if (docs == null) {
+    }).then((result) => {
+        if (result == null) {
             return res.redirect('/chatroom/General');
         } else {
-            db.get('chatrooms').find({}).then((docs) => {
-                res.render('chatroom', {
-                    'chatrooms': docs,
-                    roomName: req.params.room,
-                    currentUser: currentUser,
-                    usersStatuses: allUsersStatuses.result
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    // render the page
+                    res.render('chatroom', {
+                        'chatrooms': chatRooms,
+                        roomName: req.params.room,
+                        currentUser: req.session.username,
+                        allUsers: users,
+                        usersStatuses: allUsersStatuses.result
+                    });
+                });
+            });
+        }
+    });
+});
+
+// Direct messages
+app.get('/dms', function (req, res) {
+    res.redirect('chatroom/General');
+});
+
+app.get('/dms/:target', function (req, res) {
+    // check if user (/:target) exists
+    db.get('users').findOne({
+        username: req.params.target
+    }).then((result) => {
+        if (result == null) {
+            return res.redirect('/chatroom/General');
+        } else {
+            // gets users from database
+            db.get('users').find({}).then((users) => {
+                // gets chatrooms from database
+                db.get('chatrooms').find({}).then((chatRooms) => {
+                    res.render('dms', {
+                        // render the page
+                        'chatrooms': chatRooms,
+                        target: req.params.target,
+                        currentUser: req.session.username,
+                        allUsers: users
+                    });
                 });
             });
         }
@@ -259,9 +319,54 @@ io.on('connection', function (socket) {
         });
     });
 
+    // does stuff when user connects to private chat
+    socket.on('user-connected-private', function (target, name, socketID) {
+        socket.join(name + target);
+
+        // gets old messages sent by user
+        db.get('private-messages').find({
+            senderID: name,
+            receiverID: target
+        }).then((user_messages) => {
+            // gets old messages sent by target
+            db.get('private-messages').find({
+                senderID: target,
+                receiverID: name
+            }).then((target_messages) => {
+                // combine messages to one array
+                let allMessages = user_messages.concat(target_messages)
+
+                // sort array by time
+                allMessages.sort(function (a, b) {
+                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
+                });
+
+                // sort array by date
+                allMessages.sort(function (a, b) {
+                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
+                });
+
+                // sends old messages to the user that just connected
+                for (doc of allMessages) {
+                    io.to(socketID).emit('private message', doc.senderID, doc.message);
+                }
+            })
+        })
+    });
+
     // add new chat room to database
     socket.on('create-chat-room', function (newChatRoom) {
-        db.get('chatrooms').insert(newChatRoom);
+        // checks if chat room already exists
+        db.get('chatrooms').findOne({
+            roomname: newChatRoom.roomname
+        }).then((result) => {
+            if (result == null) {
+                db.get('chatrooms').insert(newChatRoom);
+                socket.emit('create-status', 'Chat room was created, refresh page')
+            } else {
+                socket.emit('create-status', 'A room with this name already exists')
+            }
+        });
     });
 
     // receives message data from client
@@ -282,28 +387,80 @@ io.on('connection', function (socket) {
         io.in(room).emit('chat message', data.userid, data.message);
     });
 
+    // receives private message from client
+    socket.on('private message', function (target, data) {
+        db.get('private-messages').insert({
+            'senderID': data.userid,
+            'receiverID': target,
+            'date': new Date().toLocaleDateString('sv'),
+            'time': new Date().toLocaleTimeString('sv', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }),
+            'message': data.message
+        });
+
+        // sends message to client
+        io.in(target + data.userid).emit('private message', data.userid, data.message);
+        io.in(data.userid + target).emit('private message', data.userid, data.message);
+    });
+
     // does stuff when user disconnects
     socket.on('disconnect', function (room, name) {
         // maybe something here...
     });
 });
 
-//Edit user
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
+});
+
+//Edit user ... Denna kod kan förbättras(kanske skicka med filnamnet på något sätt)
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
-
-    try {
+    
+    
+    try {   
         if (!request.files) {
-            //Om ingen bild skickas med gör något
-            response.send(404);
-
+            console.log("ingen bild skickades med");
+            //Om ingen bild skickas med, uppdatera inte bilden
+                
+                let newUserName = request.body.username;
+                let newEmail = request.body.useremail;
+                let oldUserName = request.params.olduser;
+                request.session.username = newUserName;
+                request.session.email = newEmail;
+                console.log(request.session.username);
+                userTabell.update({
+                    'username': oldUserName
+                }, {
+                    $set: {
+                        'username': newUserName,
+                        'email': newEmail   
+                    }
+                }, (err, item) => {
+                    if (err) {
+                        // If it failed, return error
+                        response.send("There was a problem adding the information to the database.");
+                    } else {
+                        //profile_pic.mv('./images/' + profile_pic.name);
+                        response.redirect("/profile/" + newUserName);
+                    }
+                });
         } else {
+            console.log("en bild skickades med");
             //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
+           
+            let newImageName = request.files.profile_image;
             let newUserName = request.body.username;
             let newEmail = request.body.useremail;
             let oldUserName = request.params.olduser;
-            let newImageName = request.files.profile_image;
+            request.session.username = newUserName;
+            request.session.email = newEmail;
+            console.log(request.session.username);
             newImageName.mv('./public/images/' + newImageName.name);
             userTabell.update({
                 'username': oldUserName
@@ -323,11 +480,9 @@ app.post('/profile/:olduser', async (request, response) => {
                 }
             });
         }
-
     } catch (err) {
         response.status(500).send(err);
     }
-
 });
 
 //Delete user
