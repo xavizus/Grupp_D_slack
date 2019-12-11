@@ -6,7 +6,7 @@
     <% include ./partials/header %>
     <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
     <% include ./partials/logout %>
-   
+
 </head>
 
 <body>
@@ -16,32 +16,32 @@
         const userId = '<%=userId%>';
     </script>
     <div class="row">
-            <div id="chatrooms" class="col-3">
-                    <h3>Create chat room</h3>
-                    <form id="createChatRoom" action="">
-                        <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
-                    </form>
-            
-                    <p>Logged in as <%=currentUser%>
-                        <a href="/profile/<%=currentUser%>">View Profile</a>
-                    </p>
-            
-                    <h3>Chat rooms</h3>
-                    <ul>
-                        <% for (chatroom of chatrooms) { %>
-                        <li><a href="/chatroom/<%= chatroom.roomname %>"> <%= chatroom.roomname %> </a></li>
-                        <% } %>
-                    </ul>
-            
-                    <h3>Direct messages</h3>
-                    <% include ./partials/online %>
-                </div>
-                <div id="chat-container" class="col">
-                        <ul id="messages"></ul>
-                        <form id="sendMessage" action="">
-                            <input id="m" autocomplete="off"><button>Send</button>
-                        </form>
-                    </div>
+        <div id="chatrooms" class="col-3">
+            <h3>Create chat room</h3>
+            <form id="createChatRoom" action="">
+                <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
+            </form>
+
+            <p>Logged in as <%=currentUser%>
+                <a href="/profile/<%=currentUser%>">View Profile</a>
+            </p>
+
+            <h3>Chat rooms</h3>
+            <ul>
+                <% for (chatroom of chatrooms) { %>
+                <li><a href="/chatroom/<%= chatroom.roomname %>"> <%= chatroom.roomname %> </a></li>
+                <% } %>
+            </ul>
+
+            <h3>Direct messages</h3>
+            <% include ./partials/online %>
+        </div>
+        <div id="chat-container" class="col">
+            <ul id="messages"></ul>
+            <form id="sendMessage" action="">
+                <input id="m" autocomplete="off"><button>Send</button>
+            </form>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
