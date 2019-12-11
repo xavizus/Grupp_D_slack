@@ -406,6 +406,21 @@ io.on('connection', function (socket) {
     // does stuff when user disconnects
     socket.on('disconnect', (userId, status) => {
         io.emit('status-change', socket.userId, 'Offline');
+        fetch(`${apiURL}/`)
+
+
+        let dataToSend = {
+            userId: userId,
+            status: "Offline"
+        };
+
+        fetch(`${apiURL}/updateStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataToSend)
+        });
     });
 });
 
