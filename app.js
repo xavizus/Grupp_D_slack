@@ -101,42 +101,52 @@ app.get('/login', (request, response) => {
     }
 });
 
-app.post('/login', (request, response) => {
+app.post('/login', async(request, response) => {
     let email = request.body.email;
 
     let password = request.body.password;
-
     if ((email == '') || password == '') {
         response.redirect('/login' + '/?errorMSG=User or password not matches!');
         return;
     }
-    fetch(`${apiURL}/getPasswordHash/${email}`)
-        .then((response => response.json()))
-        .then(json => {
-            if (json.result) {
-                bcrypt.compare(password, json.result).then(res => {
-                    if (res) {
-                        // Set data to the session
-                        request.session.authenticated = true;
+    let data = await fetch(`${apiURL}/getPasswordHash/${email}`)
+        .then((response => response.json()));
+    if (data.result) {
+        let hashedPassword = await bcrypt.compare(password, data.result);
+        if (hashedPassword) {
+            // Set data to the session
+            request.session.authenticated = true;
+            let userInfoData = await fetch(`${apiURL}/getUserInfo/${email}`)
+                .then((response => response.json()));
+            request.session.username = userInfoData.result.username;
+            request.session.userId = userInfoData.result._id;
 
-                        fetch(`${apiURL}/getUserInfo/${email}`)
-                            .then(response => response.json())
-                            .then(result => {
-                                request.session.username = result.result.username;
-                                request.session.userID = result.result._id;
-                                // Save the session so you can use it later.
-                                request.session.save();
-                                response.redirect('/chatroom');
-                            });
-                    } else {
-                        response.send("You are unauthorized");
-                    }
-                });
-            } else {
-                response.send("Wrong password or username");
+            let dataToSend = {
+                userId: request.session.userId,
+                status: "Online"
+            };
+
+            let receivedData = await fetch(`${apiURL}/updateStatus`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            if (!receivedData.result == "OK") {
+                response.send(receivedData.message);
             }
+            // Save the session so you can use it later.
+            request.session.save();
+            response.redirect('/chatroom');
 
-        });
+        } else {
+            response.send("You are unauthorized");
+        }
+    } else {
+        response.send("Wrong password or username");
+    }
 });
 
 app.get('/newAccount', (request, response) => {
@@ -231,10 +241,15 @@ app.get('/chatroom', function(req, res) {
     res.redirect('chatroom/General');
 });
 
-app.get('/chatroom/:room', function(req, res) {
+app.get('/chatroom/:room', async function(req, res) {
+    // checks if the chatroom the user is trying to access exists
     if (!req.session.authenticated) {
         res.redirect('/login');
     }
+    // Get all current status.
+    let allUsersStatuses = await fetch(`${apiURL}/status`)
+        .then(response => response.json());
+
     // checks if the chatroom the user is trying to access (/:room) exists
     db.get('chatrooms').findOne({
         roomname: req.params.room
@@ -242,17 +257,15 @@ app.get('/chatroom/:room', function(req, res) {
         if (result == null) {
             return res.redirect('/chatroom/General');
         } else {
-            // gets users from database
-            db.get('users').find({}).then((users) => {
-                // gets chatrooms from database
-                db.get('chatrooms').find({}).then((chatRooms) => {
-                    // render the page
-                    res.render('chatroom', {
-                        'chatrooms': chatRooms,
-                        roomName: req.params.room,
-                        currentUser: req.session.username,
-                        allUsers: users
-                    });
+            // gets chatrooms from database
+            db.get('chatrooms').find({}).then((chatRooms) => {
+                // render the page
+                res.render('chatroom', {
+                    'chatrooms': chatRooms,
+                    roomName: req.params.room,
+                    currentUser: req.session.username,
+                    userId: req.session.userId,
+                    usersStatuses: allUsersStatuses.result
                 });
             });
         }
@@ -292,7 +305,8 @@ app.get('/dms/:target', function(req, res) {
 // WebSocket
 io.on('connection', function(socket) {
     // does stuff when user connects
-    socket.on('user-connected', function(room, name, socketID) {
+    socket.on('user-connected', function(room, name, socketID, userId) {
+        socket.userId = userId;
         socket.join(room);
         // sends old chatroom messages from database to client
         db.get('messages').find({
@@ -303,6 +317,7 @@ io.on('connection', function(socket) {
                 io.to(socketID).emit('chat message', doc.userid, doc.message);
             }
         });
+        io.emit('status-change', socket.userId, 'Online');
     });
 
     // does stuff when user connects to private chat
@@ -324,12 +339,7 @@ io.on('connection', function(socket) {
 
                 // sort array by time
                 allMessages.sort(function(a, b) {
-                    return Number(a.time.replace(/:/g, '')) - Number(b.time.replace(/:/g, ''));
-                });
-
-                // sort array by date
-                allMessages.sort(function(a, b) {
-                    return Number(a.date.replace(/-/g, '')) - Number(b.date.replace(/-/g, ''));
+                    return new Date(a.dateAndTime) - new Date(b.dateAndTime);
                 });
 
                 // sends old messages to the user that just connected
@@ -378,12 +388,7 @@ io.on('connection', function(socket) {
         db.get('private-messages').insert({
             'senderID': data.userid,
             'receiverID': target,
-            'date': new Date().toLocaleDateString('sv'),
-            'time': new Date().toLocaleTimeString('sv', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }),
+            'dateAndTime': new Date(),
             'message': data.message
         });
 
@@ -393,8 +398,21 @@ io.on('connection', function(socket) {
     });
 
     // does stuff when user disconnects
-    socket.on('disconnect', function(room, name) {
-        // maybe something here...
+    socket.on('disconnect', () => {
+        io.emit('status-change', socket.userId, 'Offline');
+
+        let dataToSend = {
+            userId: socket.userId,
+            status: "Offline"
+        };
+
+        fetch(`${apiURL}/updateStatus`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataToSend)
+        });
     });
 });
 
@@ -408,64 +426,37 @@ app.post('/profile/:olduser', async(request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
 
-
     try {
-        if (!request.files) {
-            console.log("ingen bild skickades med");
-            //Om ingen bild skickas med, uppdatera inte bilden
-
-            let newUserName = request.body.username;
-            let newEmail = request.body.useremail;
-            let oldUserName = request.params.olduser;
-            request.session.username = newUserName;
-            request.session.email = newEmail;
-            console.log(request.session.username);
-            userTabell.update({
-                'username': oldUserName
-            }, {
-                $set: {
-                    'username': newUserName,
-                    'email': newEmail
-                }
-            }, (err, item) => {
-                if (err) {
-                    // If it failed, return error
-                    response.send("There was a problem adding the information to the database.");
-                } else {
-                    //profile_pic.mv('./images/' + profile_pic.name);
-                    response.redirect("/profile/" + newUserName);
-                }
-            });
-        } else {
-            console.log("en bild skickades med");
-            //Om en bild skickas med, edita i databas och lägg till bild i bildmapp.
-
-            let newImageName = request.files.profile_image;
-            let newUserName = request.body.username;
-            let newEmail = request.body.useremail;
-            let oldUserName = request.params.olduser;
-            request.session.username = newUserName;
-            request.session.email = newEmail;
-            console.log(request.session.username);
-            newImageName.mv('./public/images/' + newImageName.name);
-            userTabell.update({
-                'username': oldUserName
-            }, {
-                $set: {
-                    'username': newUserName,
-                    'email': newEmail,
-                    'profilePicturePath': "/images/" + newImageName.name
-                }
-            }, (err, item) => {
-                if (err) {
-                    // If it failed, return error
-                    response.send("There was a problem adding the information to the database.");
-                } else {
-                    //profile_pic.mv('./images/' + profile_pic.name);
-                    response.redirect("/profile/" + newUserName);
-                }
-            });
+        let newUserName = request.body.username;
+        let newEmail = request.body.useremail;
+        let changedData = {
+            'username': newUserName,
+            'email': newEmail
         }
+
+        if (request.files) {
+            let newImageName = request.files.profile_image;
+            newImageName.mv('./public/images/' + newImageName.name);
+            changedData.profilePicturePath = "/images/" + newImageName.name;
+        }
+
+        let oldUserName = request.params.olduser;
+        request.session.username = newUserName;
+        request.session.email = newEmail;
+
+        userTabell.update({
+            'username': oldUserName
+        }, {
+            $set: changedData
+        }, (err, item) => {
+            if (err) {
+                // If it failed, return error
+                response.send("There was a problem adding the information to the database.");
+            } else {
+                //profile_pic.mv('./images/' + profile_pic.name);
+                response.redirect("/profile/" + newUserName);
+            }
+        });
     } catch (err) {
         response.status(500).send(err);
     }

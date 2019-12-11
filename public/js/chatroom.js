@@ -3,7 +3,7 @@ $(function () {
 
     // when user connects
     socket.on('connect', () => {
-        socket.emit('user-connected', roomName, currentUser, socket.id);
+        socket.emit('user-connected', roomName, currentUser, socket.id, userId);
     });
 
 
@@ -43,4 +43,19 @@ $(function () {
     socket.on('chat message', function (user, message) {
         $('#messages').append($('<li>').html('<a href="/profile/' + user + '">' + user + '</a> skrev: ' + message));
     });
+
+    // Update statuses for users
+    socket.on('status-change', (userId, status) => {
+        console.log(`UserID: ${userId} changed status to: ${status}`);
+        let cssStatus = '';
+        if(status == 'Online') {
+            cssStatus = 'text-success';
+        }
+        else {
+            cssStatus = 'text-secondary';
+        }
+        $(`#${userId}`).removeClass();
+        $(`#${userId}`).addClass(cssStatus);
+    });
+
 });

@@ -51,7 +51,7 @@ router.get('/getUserInfo/:email', (request,response) => {
     let db = request.db;
     let collection = db.get("users");
 
-    collection.find({ "email": email }, { fields: { "username": 1, _id: 1 } }, (error, data) => {
+    collection.find({ "email": email }, { projection: { "username": 1, _id: 1 } }, (error, data) => {
         if (error) {
             response.send({error});
             return;
@@ -84,7 +84,7 @@ router.get('/exist/:dataType/:dataToSearch', (request, response) => {
     let dataType = request.params.dataType;
 
     if (allowedTypes.indexOf(dataType) == -1) {
-        responseObject.response = "Failed";
+        responseObject.response = "ERROR";
         responseObject.result = "Datatype not existing!";
         response.send(responseObject);
         return;
@@ -122,6 +122,110 @@ router.post('/addUser', (request,response) => {
         } else {
             response.send({result: "OK"});
         }
+    });
+});
+
+router.get('/status/:userId', (request,response) => {
+    let userId = request.params.userId;
+
+    let db = request.db;
+    let collectionUsers = db.get('users');
+
+    let query = {
+        _id: userId
+    };
+
+    let wantedData = {
+        projection: {
+            _id: 0,
+            status: 1
+        }
+    };
+
+    let responseObject = {
+        response: "OK"
+    };
+
+    collectionUsers.findOne(query,wantedData, (error,result) => {
+        if(result.length < 1 || result == "") {
+            responseObject.response = "ERROR";
+            responseObject.result.message = "Could not find user!"
+
+            response.send(responseObject);
+            return;
+        }
+        responseObject.result = result;
+        response.send(responseObject);
+    });
+
+});
+
+router.get('/status', (request, response) => {
+    let db = request.db;
+    let collectionUsers = db.get('users');
+    let query = {};
+    let wantedData = {
+        projection: {
+            _id: 1,
+            status: 1,
+            username: 1
+        }
+    };
+
+    let responseObject = {
+        response: "OK"
+    };
+
+    collectionUsers.find(query,wantedData, (error,result) => {
+        if(result.length < 1 || result == "") {
+            responseObject.response = "ERROR";
+            responseObject.result.message = "Could not find user!"
+
+            response.send(responseObject);
+            return;
+        }
+        responseObject.result = result;
+        response.send(responseObject);
+    });
+});
+
+router.post('/updateStatus',(request,response) => {
+    let db = request.db;
+    let collectionUsers = db.get('users');
+    let query = {
+        _id: request.body.userId
+    };
+    let updatedValues = {
+        $set: {
+            status: request.body.status
+        }
+    };
+
+    if(request.body.userId == "" || request.body.status == "") {
+        response.send({
+            response: "ERROR",
+            result: {
+                message: "userId or status missing!"
+            }
+        });
+
+        return;
+    }
+
+    collectionUsers.update(query,updatedValues, (error, result) => {
+        if(error) {
+            response.send({
+                response: "ERROR",
+                result: {error} 
+            });
+            return;
+        }
+        response.send({
+            response: "OK",
+            result: {
+                message: result
+            }
+        });
     });
 });
 
