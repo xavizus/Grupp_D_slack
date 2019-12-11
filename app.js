@@ -262,7 +262,6 @@ app.get('/chatroom/:room', async function (req, res) {
                     'chatrooms': chatRooms,
                     roomName: req.params.room,
                     currentUser: req.session.username,
-                    allUsers: users,
                     usersStatuses: allUsersStatuses.result
                 });
             });
