@@ -2,8 +2,7 @@
 <html>
 
 <head>
-    <title>Socket.IO chat</title>
-    <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
+        <% include ./partials/header %>
 </head>
 
 <body>
@@ -27,6 +26,8 @@
             <% } %>
         </ul>
     </div>
+
+    <% include ./partials/online %>
 
     <div id="chat-container">
         <ul id="messages"></ul>

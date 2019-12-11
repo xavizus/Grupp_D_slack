@@ -100,38 +100,49 @@ app.get('/login', (request, response) => {
     }
 });
 
-app.post('/login', (request, response) => {
+app.post('/login', async (request, response) => {
     let email = request.body.email;
 
     let password = request.body.password;
 
-    fetch(`${apiURL}/getPasswordHash/${email}`)
-        .then((response => response.json()))
-        .then(json => {
-            if (json.result) {
-                bcrypt.compare(password, json.result).then(res => {
-                    if (res) {
-                        // Set data to the session
-                        request.session.authenticated = true;
+    let data = await fetch(`${apiURL}/getPasswordHash/${email}`)
+        .then((response => response.json()));
+    if (data.result) {
+        let hashedPassword = await bcrypt.compare(password, data.result);
+        if (hashedPassword) {
+            // Set data to the session
+            request.session.authenticated = true;
+            let userInfoData = await fetch(`${apiURL}/getUserInfo/${email}`)
+                .then((response => response.json()));
+            request.session.username = userInfoData.result.username;
+            request.session.userID = userInfoData.result._id;
 
-                        fetch(`${apiURL}/getUserInfo/${email}`)
-                            .then(response => response.json())
-                            .then(result => {
-                                request.session.username = result.result.username;
-                                request.session.userID = result.result._id;
-                                // Save the session so you can use it later.
-                                request.session.save();
-                                response.redirect('/chatroom');
-                            });
-                    } else {
-                        response.send("You are unauthorized");
-                    }
-                });
-            } else {
-                response.send("Wrong password or username");
+            let dataToSend = {
+                userId: request.session.userID,
+                status: "Online"
+            };
+
+            let receivedData = await fetch(`${apiURL}/updateStatus`,{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dataToSend)
+            });
+
+            if(!receivedData.result == "OK") {
+                response.send(receivedData.message);
             }
+            // Save the session so you can use it later.
+            request.session.save();
+            response.redirect('/chatroom');
 
-        });
+        } else {
+            response.send("You are unauthorized");
+        }
+    } else {
+        response.send("Wrong password or username");
+    }
 });
 
 app.get('/newAccount', (request, response) => {
@@ -149,7 +160,7 @@ app.post('/newAccount', (request, response) => {
         username: username
     };
     bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(password, salt,(err, hash) => {
+        bcrypt.hash(password, salt, (err, hash) => {
             data.password = hash;
             fetch(`${apiURL}/addUser`, {
                 method: 'POST',
@@ -175,7 +186,9 @@ app.get('/profile/:name', function (req, res) {
     console.log(req.session.username);
     let db = req.db;
     let usersCollection = db.get('users');
-    usersCollection.find({"username": nameToShow}, {}, (err, data) => {
+    usersCollection.find({
+        "username": nameToShow
+    }, {}, (err, data) => {
         if (data.length != 0) {
             res.render('./profile.ejs', {
                 "data": data
@@ -205,7 +218,10 @@ app.get('/chatroom', function (req, res) {
     res.redirect('chatroom/General');
 });
 
-app.get('/chatroom/:room', function (req, res) {
+app.get('/chatroom/:room', async function (req, res) {
+    // Get all current status.
+    let allUsersStatuses = await fetch(`${apiURL}/status`)
+        .then(response => response.json());
     //Spara loginnamn i variabel och skicka med den i view
     let currentUser = req.session.username;
     // checks if the chatroom the user is trying to access exists
@@ -219,7 +235,8 @@ app.get('/chatroom/:room', function (req, res) {
                 res.render('chatroom', {
                     'chatrooms': docs,
                     roomName: req.params.room,
-                    currentUser : currentUser
+                    currentUser: currentUser,
+                    usersStatuses: allUsersStatuses.result
                 });
             });
         }
