@@ -4,8 +4,8 @@
 <head>
     <title>Socket.IO chat</title>
     <% include ./partials/header %>
-    <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
-    
+        <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
+
 
 </head>
 
@@ -16,45 +16,49 @@
         const userId = '<%=userId%>';
     </script>
     <div class="container-fluid">
-    <div class="row">
-            
-        <div id="chatrooms" class="col-sm-2">
+        <div class="row">
+            <div id="chatrooms" class="col-sm-2 mh-90">
                 <% include ./partials/logout %>
-            <h3>Create chat room</h3>
-            <form id="createChatRoom" action="">
-                <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
-            </form>
+                    <h3>Create chat room</h3>
+                    <form id="createChatRoom" action="">
+                        <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
+                    </form>
 
-            <p>Logged in as <%=currentUser%>
-                <a href="/profile/<%=currentUser%>">View Profile</a>
-            </p>
+                    <p>Logged in as
+                        <%=currentUser%>
+                            <a href="/profile/<%=currentUser%>">View Profile</a>
+                    </p>
 
-            <h3>Chat rooms</h3>
-            <ul>
-                <% for (chatroom of chatrooms) { %>
-                <li><a href="/chatroom/<%= chatroom.roomname %>"> <%= chatroom.roomname %> </a></li>
-                <% } %>
-            </ul>
-            <div id="direct-messages">
-                <h3>Direct messages</h3>
+                    <h3>Chat rooms</h3>
+                    <ul>
+                        <% for (chatroom of chatrooms) { %>
+                            <li>
+                                <a href="/chatroom/<%= chatroom.roomname %>">
+                                    <%= chatroom.roomname %>
+                                </a>
+                            </li>
+                            <% } %>
+                    </ul>
+                    <div id="direct-messages">
+                        <h3>Direct messages</h3>
+                        <% include ./partials/online %>
+                    </div>
+            </div>
+            <div id="chat-container" class="col-sm-8">
+                <h1>roomname here</h1>
+                <ul id="messages">
+
+                </ul>
+                <form id="sendMessage" action="" class="">
+                    <input id="m" autocomplete="off"><button>Send</button>
+                </form>
+            </div>
+            <div id="All-users" class="col-sm-2">
+                <h3>All users</h3>
                 <% include ./partials/online %>
             </div>
         </div>
-        <div id="chat-container" class="col-sm-8">
-                <h1>roomname here</h1>
-            <ul id="messages">
-                
-            </ul>
-            <form id="sendMessage" action="" class="">
-                    <input id="m" autocomplete="off"><button>Send</button>
-            </form>
-        </div>
-        <div id="All-users" class="col-sm-2">
-            <h3>All users</h3>
-            <% include ./partials/online %>
-        </div>
     </div>
-</div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/js/chatroom.js"></script>
