@@ -1,15 +1,14 @@
 $().ready(() => {
-    $('#email').change(()=> {
+    $('#email').change(() => {
         let emailAddress = $('#email').val();
         $.ajax({
             url: `http://localhost:8080/api/v1/exist/email/${emailAddress}`
         }).done(data => {
             let isAvailable = data.result;
-            if(isAvailable) {
+            if (isAvailable) {
                 $('#email').removeClass('is-valid');
                 $('#email').addClass('is-invalid');
-            }
-            else {
+            } else {
                 $('#email').removeClass('is-invalid');
                 $('#email').addClass('is-valid');
             }
@@ -18,70 +17,65 @@ $().ready(() => {
         });
     });
 
-    $('#username').change(()=> {
+    $('#username').change(() => {
         let username = $('#username').val();
         $.ajax({
             url: `http://localhost:8080/api/v1/exist/username/${username}`
         }).done(data => {
             let isAvailable = data.result;
-            if(isAvailable) {
+            if (isAvailable) {
                 $('#username').removeClass('is-valid');
                 $('#username').addClass('is-invalid');
-            }
-            else {
+            } else {
                 $('#username').removeClass('is-invalid');
                 $('#username').addClass('is-valid');
             }
             checkIfAllFieldsAreValid();
         });
     });
-    $('#password').change(()=> {
+    $('#password').change(() => {
         let password = $('#password');
-        if(password.val().length < 3) {
+        if (password.val().length < 3) {
             password.removeClass('is-valid');
             password.addClass('is-invalid');
-        }
-        else {
+        } else {
             password.removeClass('is-invalid');
             password.addClass('is-valid');
         }
         checkIfAllFieldsAreValid();
     });
 
-    $('#repeatPassword').change(()=> {
+    $('#repeatPassword').change(() => {
         let password = $('#repeatPassword');
-        if(password.val().length < 3 || ($('#password').val() != password.val())) {
+        if (password.val().length < 3 || ($('#password').val() != password.val())) {
             password.removeClass('is-valid');
             password.addClass('is-invalid');
-        }
-        else {
+        } else {
             password.removeClass('is-invalid');
             password.addClass('is-valid');
         }
         checkIfAllFieldsAreValid();
     });
 
-    $('#checkbox').change(()=> {
+    $('#checkbox').change(() => {
         let checkbox = $('#checkbox');
-        if(checkbox.prop("checked")) {
+        if (checkbox.prop("checked")) {
             checkbox.removeClass('is-invalid');
             checkbox.addClass('is-valid');
-        }
-        else {
+        } else {
             checkbox.removeClass('is-valid');
             checkbox.addClass('is-invalid');
         }
-        checkIfAllFieldsAreValid(); 
+        checkIfAllFieldsAreValid();
     });
 });
 
 function checkIfAllFieldsAreValid() {
     let totalIsValid = $(".is-valid");
 
-    if(totalIsValid.length > 4) {
+    if (totalIsValid.length > 4) {
         $('#submitButton').attr('disabled', false);
-    }
-    else {
-        $('#submitButton').attr('disabled',true);
+    } else {
+        $('#submitButton').attr('disabled', true);
     }
 }

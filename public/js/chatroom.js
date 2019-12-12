@@ -1,4 +1,4 @@
-$(function () {
+$(function() {
     var socket = io();
 
     // when user connects
@@ -8,7 +8,7 @@ $(function () {
 
 
     // create chat room input form
-    $('#createChatRoom').submit(function (e) {
+    $('#createChatRoom').submit(function(e) {
         // prevents page reloading
         e.preventDefault();
 
@@ -24,7 +24,7 @@ $(function () {
     });
 
     // message input form
-    $('#sendMessage').submit(function (e) {
+    $('#sendMessage').submit(function(e) {
         // prevents page reloading
         e.preventDefault();
 
@@ -40,18 +40,18 @@ $(function () {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function (user, message) {
+    socket.on('chat message', function(user, message) {
         $('#messages').append($('<li>').html('<a href="/profile/' + user + '">' + user + '</a> skrev: ' + message));
+        $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
     });
 
     // Update statuses for users
     socket.on('status-change', (userId, status) => {
         console.log(`UserID: ${userId} changed status to: ${status}`);
         let cssStatus = '';
-        if(status == 'Online') {
+        if (status == 'Online') {
             cssStatus = 'text-success';
-        }
-        else {
+        } else {
             cssStatus = 'text-secondary';
         }
         $(`#${userId}`).removeClass();
