@@ -32,7 +32,7 @@
                     <h3>Chat rooms</h3>
                     <ul>
                         <% for (chatroom of chatrooms) { %>
-                            <li>
+                            <li class ="roomList">
                                 <a href="/chatroom/<%= chatroom.roomname %>">
                                     <%= chatroom.roomname %>
                                 </a>
@@ -44,15 +44,19 @@
                         <% include ./partials/online %>
                     </div>
             </div>
-            <div id="chat-container" class="col-sm-8">
-                <h1>roomname here</h1>
-                <ul id="messages">
+            <div id="around-chat" class="col-sm-8">
+                    <h1>roomname here</h1>
+                <div id="chat-container">
+                    
+                    <ul id="messages">
 
-                </ul>
-                <form id="sendMessage" action="" class="">
-                    <input id="m" autocomplete="off"><button>Send</button>
-                </form>
+                    </ul>
+                    <form id="sendMessage" action="" class="">
+                        <input id="m" autocomplete="off"><button>Send</button>
+                    </form>
+                </div>
             </div>
+        
             <div id="All-users" class="col-sm-2">
                 <h3>All users</h3>
                 <% include ./partials/online %>

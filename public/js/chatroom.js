@@ -42,6 +42,7 @@ $(function() {
     // receives message from server and prints it in the chat
     socket.on('chat message', function(user, message) {
         $('#messages').append($('<li>').html('<a href="/profile/' + user + '">' + user + '</a> skrev: ' + message));
+        $('#messages').append($('<hr class="test">'));
         $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
     });
 
