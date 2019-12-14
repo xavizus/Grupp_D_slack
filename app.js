@@ -212,10 +212,11 @@ app.get('/profile/:name', async function (req, res) {
     }
 })
 
+// GET the data needed to edit the database
 app.get('/profile/edituser/:username', async (req, res) => {
     let currentUserName = req.params.username;
 
-    let result = await fetch(`${apiURL}/editProfileData/${currentUserName}`)
+    let result = await fetch(`${apiURL}/editProfile/${currentUserName}`)
     .then((response => response.json()));
     if (result.results.length != 0) {
         res.render('editCurrentUser', {
@@ -223,6 +224,45 @@ app.get('/profile/edituser/:username', async (req, res) => {
         });
     } else {
         res.send("user you want to edit does not exist");
+    }
+});
+
+//POST the data to Edit the users ... Denna kod kan förbättras(kanske skicka med filnamnet på något sätt)
+app.post('/profile/:olduser', async(request, response) => {
+    
+    try {
+        let newUserName = request.body.username;
+        let newEmail = request.body.useremail;
+        let oldUserName = request.params.olduser;
+        let changedData = {
+            'username': newUserName,
+            'email': newEmail
+        }
+
+        if (request.files) {
+            let newImageName = request.files.profile_image;
+            newImageName.mv('./public/images/' + newImageName.name);
+            changedData.profilePicturePath = "/images/" + newImageName.name;
+        }
+
+        await fetch(`${apiURL}/editProfileData/${oldUserName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(changedData)
+        }).then((response => response.json())).then(result => {
+            if (result.result == "OK") {
+                request.session.username = newUserName;
+                response.redirect('/profile/' + newUserName);
+            } else {
+                response.send(result);
+            }
+        });
+
+        
+    } catch (err) {
+        response.status(500).send(err);
     }
 });
 
@@ -239,6 +279,8 @@ app.get('/profile/deleteuser/:user', async (request, response) => {
         response.redirect('/');
     }  
 });
+
+
 
 // Chatroom
 app.get('/chatroom', function(req, res) {
@@ -425,48 +467,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/login');
 });
 
-//Edit user ... Denna kod kan förbättras(kanske skicka med filnamnet på något sätt)
-app.post('/profile/:olduser', async(request, response) => {
-    let db = request.db;
-    let userTabell = db.get('users');
 
-    fetch()
-
-    try {
-        let newUserName = request.body.username;
-        let newEmail = request.body.useremail;
-        let changedData = {
-            'username': newUserName,
-            'email': newEmail
-        }
-
-        if (request.files) {
-            let newImageName = request.files.profile_image;
-            newImageName.mv('./public/images/' + newImageName.name);
-            changedData.profilePicturePath = "/images/" + newImageName.name;
-        }
-
-        let oldUserName = request.params.olduser;
-        request.session.username = newUserName;
-        request.session.email = newEmail;
-
-        userTabell.update({
-            'username': oldUserName
-        }, {
-            $set: changedData
-        }, (err, item) => {
-            if (err) {
-                // If it failed, return error
-                response.send("There was a problem adding the information to the database.");
-            } else {
-                //profile_pic.mv('./images/' + profile_pic.name);
-                response.redirect("/profile/" + newUserName);
-            }
-        });
-    } catch (err) {
-        response.status(500).send(err);
-    }
-});
 
 
 

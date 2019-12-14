@@ -231,6 +231,7 @@ router.post('/updateStatus',(request,response) => {
 
 //Jonas api testing
 router.get('/getProfileData/:userName', (req, res) => {
+   
     currentUserName = req.params.userName;
     let db = req.db;
     let usersCollection = db.get('users');
@@ -250,7 +251,7 @@ router.get('/getProfileData/:userName', (req, res) => {
     })
 });
 
-router.get('/editProfileData/:userName', (req, res) => {
+router.get('/editProfile/:userName', (req, res) => {
     let usernameToEdit = req.params.userName;
     let db = req.db;
     let usersCollection = db.get('users');
@@ -265,6 +266,38 @@ router.get('/editProfileData/:userName', (req, res) => {
             res.send(responseObject);
         }
     });
+});
+
+router.post('/editProfileData/:oldusername', (request, response) => {
+    let db = request.db;
+    let userTabell = db.get('users');
+    let newUserName = request.body.username;
+    let newEmail = request.body.email;
+    
+    let dataToChange = {
+        'username' : newUserName,
+        'email' : newEmail
+    };
+    if (request.body.profilePicturePath) {
+        let newProfilePicturePath = request.body.profilePicturePath;
+        dataToChange.profilePicturePath = newProfilePicturePath;
+    }
+    
+    console.log(dataToChange);
+    userTabell.update({
+        'username': request.params.oldusername
+    }, {
+        $set: dataToChange
+    }, (err, item) => {
+        if (err) {
+            // If it failed, return error
+            response.send("There was a problem adding the information to the database.");
+        } else {
+            //profile_pic.mv('./images/' + profile_pic.name);
+            response.send({result: "OK"});
+        }
+    });
+
 });
 
 router.get('/deleteProfile/:userToDelete', (req, res) => {
