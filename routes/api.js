@@ -505,4 +505,25 @@ router.post('/addPrivateMessage', (req, res) => {
     });
 });
 
+router.put('/editMessage', (req, res) => {
+    let db = req.db;
+
+    db.get(req.body.messageType + 'messages').update({
+        _id: req.body._id
+    }, {
+        $set: {
+            message: req.body.message
+        }
+    }, (err, result) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                response: "OK",
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;

@@ -490,7 +490,32 @@ io.on('connection', function (socket) {
     });
 
     // edit message
-    socket.on('edit-message', (message, messageID, messageType) => {
+    socket.on('edit-message', async (message, messageID, messageType) => {
+        let messageObject = {
+            _id: messageID,
+            message: message,
+            messageType: messageType
+        }
+
+        await fetch(`${apiURL}/editMessage`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(messageObject)
+        })
+        .then(response => response.json()).then(data => {
+            if (data.response == "OK") {
+                console.log('Good');
+            } else {
+                console.log('Something went wrong');
+            }
+        });
+
+
+
+
+        /*
         db.get(messageType + 'messages').update({
             _id: messageID
         }, {
@@ -498,6 +523,7 @@ io.on('connection', function (socket) {
                 message: message
             }
         });
+        */
     });
 
     // delete message
