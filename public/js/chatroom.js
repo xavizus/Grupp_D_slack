@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
     var socket = io();
 
     // when user connects
@@ -8,7 +8,7 @@ $(function() {
 
 
     // create chat room input form
-    $('#createChatRoom').submit(function(e) {
+    $('#createChatRoom').submit(function (e) {
         // prevents page reloading
         e.preventDefault();
 
@@ -24,7 +24,7 @@ $(function() {
     });
 
     // message input form
-    $('#sendMessage').submit(function(e) {
+    $('#sendMessage').submit(function (e) {
         // prevents page reloading
         e.preventDefault();
 
@@ -40,8 +40,43 @@ $(function() {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function(user, message) {
-        $('#messages').append($('<li>').html('<a href="/profile/' + user + '">' + user + '</a> skrev: ' + message));
+    socket.on('chat message', function (user, message) {
+        let messageBox = $('<li>', {
+
+        });
+
+        let usernameLink = $('<a>', {
+            href: '/profile/' + user,
+            text: user
+        });
+
+        let chatMessage = $('<div>', {
+            text: message
+        });
+
+        let editButton = $('<button>', {
+            text: 'Edit',
+            class: 'message-buttons'
+        });
+
+        let deleteButton = $('<button>', {
+            text: 'Delete',
+            class: 'message-buttons'
+        });
+        //console.log(chatMessage)
+        if (user == currentUser) {
+            messageBox
+                .append(usernameLink)
+                .append(chatMessage)
+                .append(deleteButton)
+                .append(editButton);
+            $('#messages').append(messageBox);
+        } else {
+            messageBox
+                .append(usernameLink)
+                .append(chatMessage);
+            $('#messages').append(messageBox);
+        }
         $('#messages').append($('<hr class="test">'));
         $("#chat-container").scrollTop($("#chat-container")[0].scrollHeight);
     });

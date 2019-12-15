@@ -417,12 +417,10 @@ io.on('connection', function(socket) {
         db.get('messages').insert({
             'userid': data.userid,
             'chatroomid': room,
-            'date': new Date().toLocaleDateString('sv'),
-            'time': new Date().toLocaleTimeString('sv', {
-                hour: '2-digit',
-                minute: '2-digit'
-            }),
+            'dateAndTime': new Date(),
             'message': data.message
+        }, function(err, data) {
+            console.log(data);
         });
 
         // sends message to client
