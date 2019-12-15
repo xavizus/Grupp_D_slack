@@ -378,7 +378,6 @@ io.on('connection', function (socket) {
         }
 
         io.emit('status-change', socket.userId, 'Online');
-
     });
 
     // does stuff when user connects to private chat
@@ -389,7 +388,7 @@ io.on('connection', function (socket) {
         // get old messages sent by user
         let userPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${name}/${target}`)
             .then(response => response.json());
-        
+
         // get old messages sent by receiver
         let targetPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${target}/${name}`)
             .then(response => response.json());
@@ -409,18 +408,17 @@ io.on('connection', function (socket) {
     });
 
     // add new chat room to database
-    socket.on('create-chat-room', function (newChatRoom) {
+    socket.on('create-chat-room', async function (newChatRoom) {
         // checks if chat room already exists
-        db.get('chatrooms').findOne({
-            roomname: newChatRoom.roomname
-        }).then((result) => {
-            if (result == null) {
-                db.get('chatrooms').insert(newChatRoom);
-                socket.emit('create-status', 'Chat room was created, refresh page')
-            } else {
-                socket.emit('create-status', 'A room with this name already exists')
-            }
-        });
+        let chatRoom = await fetch(`${apiURL}/findChatRoom/${newChatRoom.roomname}`)
+            .then(response => response.json());
+
+        if (chatRoom.result == null) {
+            db.get('chatrooms').insert(newChatRoom);
+            socket.emit('create-status', 'Chat room was created, refresh page')
+        } else {
+            socket.emit('create-status', 'A room with this name already exists')
+        }
     });
 
     // receives message data from client
