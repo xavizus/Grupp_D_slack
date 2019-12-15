@@ -376,4 +376,22 @@ router.get('/getAllChatRooms', (req, res) => {
     });
 });
 
+// get old chat room messages
+router.get('/getMessages/:room', (req, res) => {
+    let db = req.db;
+    
+    db.get('messages').find({
+        chatroomid: req.params.room
+    }, (err, data) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                results : data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;

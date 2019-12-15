@@ -359,25 +359,26 @@ app.get('/dms/:target', async function (req, res) {
 // WebSocket
 io.on('connection', function (socket) {
     // does stuff when user connects
-    socket.on('user-connected', function (room, name, socketID, userId) {
+    socket.on('user-connected', async function (room, name, socketID, userId) {
         socket.userId = userId;
         socket.join(room);
+
         // sends old chatroom messages from database to client
-        db.get('messages').find({
-            chatroomid: room
-        }).then((docs) => {
+        let oldMessages = await fetch(`${apiURL}/getMessages/${room}`)
+            .then(response => response.json());
 
-            // sorts messages by time and date
-            docs.sort(function (a, b) {
-                return new Date(a.dateAndTime) - new Date(b.dateAndTime);
-            });
-
-            for (doc of docs) {
-                // sends old messages to the user that just connected
-                io.to(socketID).emit('chat message', doc.userid, doc.message, doc._id);
-            }
+        // sorts messages by time and date
+        oldMessages.results.sort(function (a, b) {
+            return new Date(a.dateAndTime) - new Date(b.dateAndTime);
         });
+
+        for (doc of oldMessages.results) {
+            // sends old messages to the user that just connected
+            io.to(socketID).emit('chat message', doc.userid, doc.message, doc._id);
+        }
+
         io.emit('status-change', socket.userId, 'Online');
+
     });
 
     // does stuff when user connects to private chat
