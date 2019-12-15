@@ -382,34 +382,30 @@ io.on('connection', function (socket) {
     });
 
     // does stuff when user connects to private chat
-    socket.on('user-connected-private', function (target, name, socketID, userId) {
+    socket.on('user-connected-private', async function (target, name, socketID, userId) {
         socket.userId = userId;
         socket.join(name + target);
 
-        // gets old messages sent by user
-        db.get('private-messages').find({
-            senderID: name,
-            receiverID: target
-        }).then((user_messages) => {
-            // gets old messages sent by target
-            db.get('private-messages').find({
-                senderID: target,
-                receiverID: name
-            }).then((target_messages) => {
-                // combine messages to one array
-                let allMessages = user_messages.concat(target_messages)
+        // get old messages sent by user
+        let userPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${name}/${target}`)
+            .then(response => response.json());
+        
+        // get old messages sent by receiver
+        let targetPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${target}/${name}`)
+            .then(response => response.json());
 
-                // sort array by time
-                allMessages.sort(function (a, b) {
-                    return new Date(a.dateAndTime) - new Date(b.dateAndTime);
-                });
+        // combine messages to one array
+        let allMessages = userPrivateMessages.results.concat(targetPrivateMessages.results);
 
-                // sends old messages to the user that just connected
-                for (doc of allMessages) {
-                    io.to(socketID).emit('chat message', doc.senderID, doc.message, doc._id);
-                }
-            })
-        })
+        // sort array by time and date
+        allMessages.sort(function (a, b) {
+            return new Date(a.dateAndTime) - new Date(b.dateAndTime);
+        });
+
+        // sends old messages to the user that just connected
+        for (doc of allMessages) {
+            io.to(socketID).emit('chat message', doc.senderID, doc.message, doc._id);
+        }
     });
 
     // add new chat room to database

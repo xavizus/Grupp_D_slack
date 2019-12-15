@@ -394,4 +394,23 @@ router.get('/getMessages/:room', (req, res) => {
     });
 });
 
+// get old private messages
+router.get('/getPrivateMessages/:sender/:receiver', (req, res) => {
+    let db = req.db;
+    
+    db.get('private-messages').find({
+        senderID: req.params.sender,
+        receiverID: req.params.receiver
+    }, (err, data) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                results : data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;
