@@ -463,6 +463,7 @@ router.get('/getPrivateMessages/:sender/:receiver', (req, res) => {
     });
 });
 
+// saves chat room messages
 router.post('/addMessage', (req, res) => {
     let db = req.db;
 
@@ -484,6 +485,7 @@ router.post('/addMessage', (req, res) => {
     });
 });
 
+// saves private messages
 router.post('/addPrivateMessage', (req, res) => {
     let db = req.db;
 
@@ -505,6 +507,7 @@ router.post('/addPrivateMessage', (req, res) => {
     });
 });
 
+// edit messages
 router.put('/editMessage', (req, res) => {
     let db = req.db;
 
@@ -514,6 +517,24 @@ router.put('/editMessage', (req, res) => {
         $set: {
             message: req.body.message
         }
+    }, (err, result) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                response: "OK",
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
+// delete messages
+router.delete('/deleteMessage', (req, res) => {
+    let db = req.db;
+
+    db.get(req.body.messageType + 'messages').remove({
+        _id: req.body._id
     }, (err, result) => {
         if (err) {
             throw err;

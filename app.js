@@ -292,6 +292,7 @@ app.get('/chatroom/:room', async function (req, res) {
     if (!req.session.authenticated) {
         res.redirect('/login');
     }
+
     // Get all current status.
     let allUsersStatuses = await fetch(`${apiURL}/status`)
         .then(response => response.json());
@@ -306,6 +307,7 @@ app.get('/chatroom/:room', async function (req, res) {
         // get list of all chat rooms
         let chatRoomList = await fetch(`${apiURL}/getAllChatRooms`)
             .then(response => response.json());
+        console.log(req.session.userId)
 
         // render the page
         res.render('chatroom', {
@@ -329,6 +331,7 @@ app.get('/dms/:target', async function (req, res) {
     if (!req.session.authenticated) {
         res.redirect('/login');
     }
+
     // Get all current status.
     let allUsersStatuses = await fetch(`${apiURL}/status`)
         .then(response => response.json());
@@ -405,6 +408,8 @@ io.on('connection', function (socket) {
         for (doc of allMessages) {
             io.to(socketID).emit('chat message', doc.senderID, doc.message, doc._id);
         }
+
+        io.emit('status-change', socket.userId, 'Online');
     });
 
     // add new chat room to database
@@ -481,8 +486,12 @@ io.on('connection', function (socket) {
                     let msgObj = msgData.result;
 
                     // sends message to client
-                    io.in(target + data.userid).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
-                    io.in(data.userid + target).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                    if (data.userid == target) {
+                        io.in(data.userid + target).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                    } else {
+                        io.in(target + data.userid).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                        io.in(data.userid + target).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                    }
                 } else {
                     console.log('Something went wrong');
                 }
@@ -498,39 +507,42 @@ io.on('connection', function (socket) {
         }
 
         await fetch(`${apiURL}/editMessage`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(messageObject)
-        })
-        .then(response => response.json()).then(data => {
-            if (data.response == "OK") {
-                console.log('Good');
-            } else {
-                console.log('Something went wrong');
-            }
-        });
-
-
-
-
-        /*
-        db.get(messageType + 'messages').update({
-            _id: messageID
-        }, {
-            $set: {
-                message: message
-            }
-        });
-        */
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageObject)
+            })
+            .then(response => response.json()).then(data => {
+                if (data.response == "OK") {
+                    console.log('Good');
+                } else {
+                    console.log('Something went wrong');
+                }
+            });
     });
 
     // delete message
-    socket.on('delete-message', (messageID, messageType) => {
-        db.get(messageType + 'messages').remove({
-            _id: messageID
-        });
+    socket.on('delete-message', async (messageID, messageType) => {
+        let messageObject = {
+            _id: messageID,
+            messageType: messageType
+        }
+
+        await fetch(`${apiURL}/deleteMessage`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageObject)
+            })
+            .then(response => response.json()).then(data => {
+                if (data.response == "OK") {
+                    console.log('Good');
+                } else {
+                    console.log('Something went wrong');
+                }
+            });
     });
 
     // does stuff when user disconnects

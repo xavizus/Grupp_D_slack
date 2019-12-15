@@ -109,7 +109,7 @@ $(function () {
             text: 'Delete',
             class: 'delete-buttons'
         });
-        
+
         deleteButton.on('click', (event) => {
             if (target == '') {
                 socket.emit('delete-message', event.currentTarget.parentNode.id, '');
