@@ -41,7 +41,6 @@ $(function () {
 
     // receives message from server and prints it in the chat
     socket.on('chat message', function (user, message, messageID) {
-        //console.log(messageID)
         let messageBox = $('<li>', {
             id: messageID
         });
@@ -60,7 +59,34 @@ $(function () {
             class: 'edit-buttons'
         });
         editButton.on('click', (event) => {
-            console.log('edit')
+            let messageDiv = event.currentTarget.previousSibling.previousSibling;
+            let oldMessage = messageDiv.innerHTML;
+
+            let editArea = $('<textarea>', {
+                html: oldMessage
+            });
+
+            let saveButton = $('<button>', {
+                text: 'Save'
+            });
+            saveButton.on('click', (event) => {
+                socket.emit('edit-message', editArea.val(), event.currentTarget.parentNode.parentNode.id);
+
+                $(messageDiv).html(editArea.val());
+            });
+
+            let closeButton = $('<button>', {
+                text: 'Close'
+            });
+            closeButton.on('click', (event) => {
+                $(messageDiv).html(oldMessage);
+            });
+
+            $(messageDiv).empty();
+            $(messageDiv)
+                .append(editArea)
+                .append(saveButton)
+                .append(closeButton);
         });
 
         let deleteButton = $('<button>', {
@@ -68,14 +94,12 @@ $(function () {
             class: 'delete-buttons'
         });
         deleteButton.on('click', (event) => {
-            console.log(event.currentTarget.parentNode.id)
             socket.emit('delete-message', event.currentTarget.parentNode.id);
 
             event.currentTarget.parentNode.nextSibling.remove()
             event.currentTarget.parentNode.remove();
         });
 
-        //console.log(chatMessage)
         if (user == currentUser) {
             messageBox
                 .append(usernameLink)

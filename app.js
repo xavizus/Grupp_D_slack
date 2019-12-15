@@ -420,10 +420,8 @@ io.on('connection', function(socket) {
             'dateAndTime': new Date(),
             'message': data.message
         }, function(err, messageData) {
-            //console.log(data);
             // sends message to client
             io.in(room).emit('chat message', data.userid, data.message, messageData._id);
-            console.log(messageData._id);
         });
 
     });
@@ -442,8 +440,17 @@ io.on('connection', function(socket) {
         io.in(data.userid + target).emit('private message', data.userid, data.message);
     });
 
+    // edit message
+    socket.on('edit-message', (message, messageID) => {
+        db.get('messages').update({
+            _id: messageID
+        }, {
+            $set: {message: message}
+        });
+    });
+
+    // delete message
     socket.on('delete-message', (messageID) => {
-        console.log(messageID);
         db.get('messages').remove({
             _id: messageID
         });
