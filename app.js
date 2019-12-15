@@ -358,6 +358,12 @@ io.on('connection', function(socket) {
         db.get('messages').find({
             chatroomid: room
         }).then((docs) => {
+            
+            // sorts messages by time and date
+            docs.sort(function(a, b) {
+                return new Date(a.dateAndTime) - new Date(b.dateAndTime);
+            });
+
             for (doc of docs) {
                 // sends old messages to the user that just connected
                 io.to(socketID).emit('chat message', doc.userid, doc.message, doc._id);
