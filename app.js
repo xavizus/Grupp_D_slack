@@ -422,21 +422,44 @@ io.on('connection', function (socket) {
                     body: JSON.stringify(newChatRoom)
                 })
                 .then(response => response.json()).then(result => {
-                    if (result.result == "OK") {
+                    if (result.response == "OK") {
                         socket.emit('create-status', 'Chat room was created, refresh page');
                     } else {
                         socket.emit('create-status', 'There was a promblem when creating the room');
-                        //response.send(result);
                     }
                 });
-
         } else {
             socket.emit('create-status', 'A room with this name already exists')
         }
     });
 
     // receives message data from client
-    socket.on('chat message', function (room, data) {
+    socket.on('chat message', async function (room, data) {
+        let messageObject = {
+            userid: data.userid,
+            chatroomid: room,
+            dateAndTime: new Date(),
+            message: data.message
+        }
+
+        await fetch(`${apiURL}/addMessage`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(messageObject)
+        })
+        .then(response => response.json()).then(data => {
+            if (data.response == "OK") {
+                let messageObj = data.result;
+                io.in(room).emit('chat message', messageObj.userid, messageObj.message, messageObj._id);
+            } else {
+                console.log('Something went wrong');
+            }
+        });
+
+
+        /*
         // store data in database
         db.get('messages').insert({
             'userid': data.userid,
@@ -447,6 +470,7 @@ io.on('connection', function (socket) {
             // sends message to client
             io.in(room).emit('chat message', data.userid, data.message, messageData._id);
         });
+        */
 
     });
 

@@ -7,7 +7,7 @@ router.get('/', (request, response) => {
 
     let collection = db.get('users');
 
-    collection.find({}, {}, function(e, docs) {
+    collection.find({}, {}, function (e, docs) {
         // Create a response object
         let responseObject = {
             response: "OK"
@@ -30,7 +30,14 @@ router.get('/getPasswordHash/:email', (request, response) => {
 
     let collection = db.get("users");
 
-    collection.find({ "email": email }, { fields: { "password": 1, _id: 0 } }, (err, data) => {
+    collection.find({
+        "email": email
+    }, {
+        fields: {
+            "password": 1,
+            _id: 0
+        }
+    }, (err, data) => {
         if (err) throw err;
         if (data.length < 1 || data == "") {
             responseObject.result = false;
@@ -42,7 +49,7 @@ router.get('/getPasswordHash/:email', (request, response) => {
 
 });
 
-router.get('/getUserInfo/:email', (request,response) => {
+router.get('/getUserInfo/:email', (request, response) => {
     let email = request.params.email;
     let responseObject = {
         response: "OK"
@@ -51,13 +58,22 @@ router.get('/getUserInfo/:email', (request,response) => {
     let db = request.db;
     let collection = db.get("users");
 
-    collection.find({ "email": email }, { projection: { "username": 1, _id: 1 } }, (error, data) => {
+    collection.find({
+        "email": email
+    }, {
+        projection: {
+            "username": 1,
+            _id: 1
+        }
+    }, (error, data) => {
         if (error) {
-            response.send({error});
+            response.send({
+                error
+            });
             return;
         }
 
-        if(data.length < 1 || data == "") {
+        if (data.length < 1 || data == "") {
             responseObject.result = false;
 
             response.send(responseObject);
@@ -107,25 +123,29 @@ router.get('/exist/:dataType/:dataToSearch', (request, response) => {
 
 });
 
-router.post('/addUser', (request,response) => {
+router.post('/addUser', (request, response) => {
     let db = request.db;
     let collectionUsers = db.get('users');
     collectionUsers.insert({
         "username": request.body.username,
-        "email":request.body.email,
+        "email": request.body.email,
         "password": request.body.password,
         "profilePicturePath": "/images/default.png"
-    },(error,result) => {
-        if(error) {
-            response.send({error})
+    }, (error, result) => {
+        if (error) {
+            response.send({
+                error
+            })
             return;
         } else {
-            response.send({result: "OK"});
+            response.send({
+                result: "OK"
+            });
         }
     });
 });
 
-router.get('/status/:userId', (request,response) => {
+router.get('/status/:userId', (request, response) => {
     let userId = request.params.userId;
 
     let db = request.db;
@@ -146,8 +166,8 @@ router.get('/status/:userId', (request,response) => {
         response: "OK"
     };
 
-    collectionUsers.findOne(query,wantedData, (error,result) => {
-        if(result.length < 1 || result == "") {
+    collectionUsers.findOne(query, wantedData, (error, result) => {
+        if (result.length < 1 || result == "") {
             responseObject.response = "ERROR";
             responseObject.result.message = "Could not find user!"
 
@@ -176,8 +196,8 @@ router.get('/status', (request, response) => {
         response: "OK"
     };
 
-    collectionUsers.find(query,wantedData, (error,result) => {
-        if(result.length < 1 || result == "") {
+    collectionUsers.find(query, wantedData, (error, result) => {
+        if (result.length < 1 || result == "") {
             responseObject.response = "ERROR";
             responseObject.result.message = "Could not find user!"
 
@@ -189,7 +209,7 @@ router.get('/status', (request, response) => {
     });
 });
 
-router.post('/updateStatus',(request,response) => {
+router.post('/updateStatus', (request, response) => {
     let db = request.db;
     let collectionUsers = db.get('users');
     let query = {
@@ -201,7 +221,7 @@ router.post('/updateStatus',(request,response) => {
         }
     };
 
-    if(request.body.userId == "" || request.body.status == "") {
+    if (request.body.userId == "" || request.body.status == "") {
         response.send({
             response: "ERROR",
             result: {
@@ -212,11 +232,13 @@ router.post('/updateStatus',(request,response) => {
         return;
     }
 
-    collectionUsers.update(query,updatedValues, (error, result) => {
-        if(error) {
+    collectionUsers.update(query, updatedValues, (error, result) => {
+        if (error) {
             response.send({
                 response: "ERROR",
-                result: {error} 
+                result: {
+                    error
+                }
             });
             return;
         }
@@ -231,23 +253,23 @@ router.post('/updateStatus',(request,response) => {
 
 //Jonas api testing
 router.get('/getProfileData/:userName', (req, res) => {
-   
+
     currentUserName = req.params.userName;
     let db = req.db;
     let usersCollection = db.get('users');
-    
+
     usersCollection.find({
         "username": currentUserName
     }, {}, (err, data) => {
-        if(err) {
+        if (err) {
             res.send("user does not exist");
         } else {
             let responseObject = {
-                results : data
+                results: data
             };
             res.send(responseObject);
         }
-        
+
     })
 });
 
@@ -259,10 +281,12 @@ router.get('/editProfile/:userName', (req, res) => {
     usersCollection.findOne({
         username: usernameToEdit
     }, (err, data) => {
-        if(err) {
+        if (err) {
             res.send("error accured when editing");
         } else {
-            let responseObject = {results : data};
+            let responseObject = {
+                results: data
+            };
             res.send(responseObject);
         }
     });
@@ -273,16 +297,16 @@ router.post('/editProfileData/:oldusername', (request, response) => {
     let userTabell = db.get('users');
     let newUserName = request.body.username;
     let newEmail = request.body.email;
-    
+
     let dataToChange = {
-        'username' : newUserName,
-        'email' : newEmail
+        'username': newUserName,
+        'email': newEmail
     };
     if (request.body.profilePicturePath) {
         let newProfilePicturePath = request.body.profilePicturePath;
         dataToChange.profilePicturePath = newProfilePicturePath;
     }
-    
+
     console.log(dataToChange);
     userTabell.update({
         'username': request.params.oldusername
@@ -294,7 +318,9 @@ router.post('/editProfileData/:oldusername', (request, response) => {
             response.send("There was a problem adding the information to the database.");
         } else {
             //profile_pic.mv('./images/' + profile_pic.name);
-            response.send({result: "OK"});
+            response.send({
+                result: "OK"
+            });
         }
     });
 
@@ -313,7 +339,7 @@ router.get('/deleteProfile/:userToDelete', (req, res) => {
             response.send("There was a problem deleting the information to the database.");
         } else {
             let responseObject = {
-                results : data
+                results: data
             };
             res.send(responseObject);
         }
@@ -323,7 +349,7 @@ router.get('/deleteProfile/:userToDelete', (req, res) => {
 // find chat room
 router.get('/findChatRoom/:room', (req, res) => {
     let db = req.db;
-    
+
     db.get('chatrooms').findOne({
         roomname: req.params.room
     }, (err, data) => {
@@ -331,7 +357,8 @@ router.get('/findChatRoom/:room', (req, res) => {
             throw err;
         } else {
             let responseObject = {
-                result : data
+                response: "OK",
+                result: data
             };
             res.send(responseObject);
         }
@@ -350,7 +377,7 @@ router.post('/createChatRoom', (req, res) => {
             throw err;
         } else {
             let responseObject = {
-                result : 'OK'
+                response: 'OK'
             };
             res.send(responseObject);
         }
@@ -360,7 +387,7 @@ router.post('/createChatRoom', (req, res) => {
 // find user
 router.get('/findUser/:user', (req, res) => {
     let db = req.db;
-    
+
     db.get('users').findOne({
         username: req.params.user
     }, (err, data) => {
@@ -368,7 +395,8 @@ router.get('/findUser/:user', (req, res) => {
             throw err;
         } else {
             let responseObject = {
-                result : data
+                response: "OK",
+                result: data
             };
             res.send(responseObject);
         }
@@ -388,7 +416,8 @@ router.get('/getAllChatRooms', (req, res) => {
             throw err;
         } else {
             let responseObject = {
-                results : data
+                response: "OK",
+                results: data
             };
             res.send(responseObject);
         }
@@ -398,7 +427,7 @@ router.get('/getAllChatRooms', (req, res) => {
 // get old chat room messages
 router.get('/getMessages/:room', (req, res) => {
     let db = req.db;
-    
+
     db.get('messages').find({
         chatroomid: req.params.room
     }, (err, data) => {
@@ -406,7 +435,8 @@ router.get('/getMessages/:room', (req, res) => {
             throw err;
         } else {
             let responseObject = {
-                results : data
+                response: "OK",
+                results: data
             };
             res.send(responseObject);
         }
@@ -416,7 +446,7 @@ router.get('/getMessages/:room', (req, res) => {
 // get old private messages
 router.get('/getPrivateMessages/:sender/:receiver', (req, res) => {
     let db = req.db;
-    
+
     db.get('private-messages').find({
         senderID: req.params.sender,
         receiverID: req.params.receiver
@@ -425,7 +455,29 @@ router.get('/getPrivateMessages/:sender/:receiver', (req, res) => {
             throw err;
         } else {
             let responseObject = {
-                results : data
+                response: "OK",
+                results: data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
+router.post('/addMessage', (req, res) => {
+    let db = req.db;
+
+    db.get('messages').insert({
+        userid: req.body.userid,
+        chatroomid: req.body.chatroomid,
+        dateAndTime: req.body.dateAndTime,
+        message: req.body.message
+    }, (err, result) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                response: "OK",
+                result: result
             };
             res.send(responseObject);
         }
