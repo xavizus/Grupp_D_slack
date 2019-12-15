@@ -292,7 +292,7 @@ router.get('/editProfile/:userName', (req, res) => {
     });
 });
 
-router.post('/editProfileData/:oldusername', (request, response) => {
+router.put('/editProfileData/:oldusername', (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
     let newUserName = request.body.username;

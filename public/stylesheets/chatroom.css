@@ -9,21 +9,21 @@ body {
 }
 
 #sendMessage {
-   border: 2px black solid;
-    position: fixed;
+
+    position: relative;
     bottom: 0;
-    width: 65%;
+    width: 100%;
+    margin-top: 20px;
 }
 
 #sendMessage input {
     border: 0;
     padding: 10px;
-    width: 90%
+    width: 84%;
 }
 
 #sendMessage button {
-    width: 9%;
-    background: rgb(130, 224, 255);
+    width: 14%;
     border: none;
     padding: 10px;
 }
@@ -31,21 +31,23 @@ body {
 #messages, .roomList {
     list-style-type: none;
     margin: 0;
-    padding: 10px;
+    
     
 }
 
 #messages li {
     padding: 5px 10px;
 }
-
+li {
+    padding: 1px;
+}
 /* #messages li:nth-child(odd) {
     background: #eee;
 } */
 
 #chat-container {
     overflow: auto;
-    height: 94vh;
+    height: 74vh;
     background-color: #2f3136;
     color: white;
     
@@ -54,6 +56,7 @@ body {
 #around-chat {
     background-color: #2f3136;
     color: white;
+    padding: 1%;
 }
 /*
 #direct-messages {
@@ -62,11 +65,29 @@ body {
 }
 */
 
+#direct-messages {
+    font-size: 1.3em;
+}
+
+.container-fluid {
+    background-color: #42454a;
+    height: 100%;
+}
+.row {
+    padding: 1%;
+}
+
 #All-users {
     overflow: auto;
-    height: 90%;
     background-color: #36393f;
     color: white;
+    list-style-type: none;
+    padding: 1%;
+}
+#All-users li, #All-users li, .stuff {
+    font-size: 1.3em;
+    text-decoration: none;
+    padding: 10px;
 }
 
 #chatrooms {
@@ -74,6 +95,8 @@ body {
     color: white;
     max-height: 95vh;
     overflow: auto;
+    list-style-type: none;
+    padding: 1%;
 }
 
 .test {
@@ -83,4 +106,12 @@ body {
 .edit-buttons, .delete-buttons {
     float: right;
     margin: 2px;
+}
+
+.wow {
+    color: black;
+}
+
+.space {
+    padding: 1%;
 }

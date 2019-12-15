@@ -246,7 +246,7 @@ app.post('/profile/:olduser', async (request, response) => {
         }
 
         await fetch(`${apiURL}/editProfileData/${oldUserName}`, {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },

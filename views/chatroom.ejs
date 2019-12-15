@@ -4,7 +4,7 @@
 <head>
     <title>Socket.IO chat</title>
     <% include ./partials/header %>
-        <link rel="stylesheet" type="text/css" href="/stylesheets/chatroom.css">
+        
 
 
 </head>
@@ -18,7 +18,7 @@
     </script>
     <div class="container-fluid">
         <div class="row">
-            <div id="chatrooms" class="col-sm-2 mh-90">
+            <div id="chatrooms" class="col-sm-2">
                 <% include ./partials/logout %>
                     <h3>Create chat room</h3>
                     <form id="createChatRoom" action="">
@@ -45,17 +45,19 @@
                         <% include ./partials/online %>
                     </div>
             </div>
-            <div id="around-chat" class="col-sm-8">
+            <div id="around-chat" class="col-sm-7">
                     <h1>roomname here</h1>
                 <div id="chat-container">
                     
                     <ul id="messages">
-
+                      
                     </ul>
-                    <form id="sendMessage" action="" class="">
-                        <input id="m" autocomplete="off"><button>Send</button>
-                    </form>
+                   
                 </div>
+                <form id="sendMessage" action="" class="">
+                    <p>Type here</p>
+                    <input id="m" autocomplete="off"><button class="btn-primary">Send</button>
+                </form>
             </div>
         
             <div id="All-users" class="col-sm-2">
