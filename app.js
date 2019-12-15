@@ -37,7 +37,7 @@ let httpPort = process.env.npm_package_config_port || 8080;
 let apiURL = `http://localhost:${httpPort}/api/v1`
 
 let mongoDB_URI = `${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_SERVER}/${process.env.MONGODB_DATABASE}?authSource=${process.env.MONGODB_DATABASE}&w=1`
-    // Monk DB-connection
+// Monk DB-connection
 const db = monk(mongoDB_URI);
 
 let store = new MongoDBStore({
@@ -62,7 +62,7 @@ app.use(fileUpload({
 }));
 
 // make it possible to use database connection elsewhere.
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     req.db = db;
     next();
 });
@@ -101,7 +101,7 @@ app.get('/login', (request, response) => {
     }
 });
 
-app.post('/login', async(request, response) => {
+app.post('/login', async (request, response) => {
     let email = request.body.email;
 
     let password = request.body.password;
@@ -189,26 +189,26 @@ app.get('/profile/:name', async function (req, res) {
     let currentUserName = req.params.name;
 
     let result = await fetch(`${apiURL}/getProfileData/${currentUserName}`)
-    .then((response => response.json()));
-   
+        .then((response => response.json()));
+
     if (sessionUserName === currentUserName) {
         console.log("visa mainprofile");
-            if (result.results.length != 0) {
-                res.render('./profile.ejs', {
-                    "data": result.results
-                });
-            } else {
-                res.send("user does not exist");
-            }
+        if (result.results.length != 0) {
+            res.render('./profile.ejs', {
+                "data": result.results
+            });
+        } else {
+            res.send("user does not exist");
+        }
     } else if (sessionUserName !== currentUserName) {
         console.log("visa visitorprofile");
-            if (result.results.length != 0) {
-                res.render('./visitorProfile.ejs', {
-                    "data": result.results
-                });
-            } else {
-                res.send("the user you look for does not exist");
-            }
+        if (result.results.length != 0) {
+            res.render('./visitorProfile.ejs', {
+                "data": result.results
+            });
+        } else {
+            res.send("the user you look for does not exist");
+        }
     }
 })
 
@@ -217,7 +217,7 @@ app.get('/profile/edituser/:username', async (req, res) => {
     let currentUserName = req.params.username;
 
     let result = await fetch(`${apiURL}/editProfile/${currentUserName}`)
-    .then((response => response.json()));
+        .then((response => response.json()));
     if (result.results.length != 0) {
         res.render('editCurrentUser', {
             "data": result.results
@@ -228,8 +228,8 @@ app.get('/profile/edituser/:username', async (req, res) => {
 });
 
 //POST the data to Edit the users ... Denna kod kan förbättras(kanske skicka med filnamnet på något sätt)
-app.post('/profile/:olduser', async(request, response) => {
-    
+app.post('/profile/:olduser', async (request, response) => {
+
     try {
         let newUserName = request.body.username;
         let newEmail = request.body.useremail;
@@ -260,7 +260,7 @@ app.post('/profile/:olduser', async(request, response) => {
             }
         });
 
-        
+
     } catch (err) {
         response.status(500).send(err);
     }
@@ -270,25 +270,25 @@ app.post('/profile/:olduser', async(request, response) => {
 app.get('/profile/deleteuser/:user', async (request, response) => {
     let currentUserName = request.params.user;
     let result = await fetch(`${apiURL}/deleteProfile/${currentUserName}`)
-    .then((response => response.json()));
+        .then((response => response.json()));
 
-    if(result.results.length !== 0) {
-     request.session.destroy();
-     response.redirect('/login');
-    }else {
+    if (result.results.length !== 0) {
+        request.session.destroy();
+        response.redirect('/login');
+    } else {
         response.redirect('/');
-    }  
+    }
 });
 
 
 
 // Chatroom
-app.get('/chatroom', function(req, res) {
+app.get('/chatroom', function (req, res) {
     res.redirect('chatroom/General');
 });
 
-app.get('/chatroom/:room', async function(req, res) {
-    // checks if the chatroom the user is trying to access exists
+app.get('/chatroom/:room', async function (req, res) {
+    // checks if user is authenticated
     if (!req.session.authenticated) {
         res.redirect('/login');
     }
@@ -297,41 +297,42 @@ app.get('/chatroom/:room', async function(req, res) {
         .then(response => response.json());
 
     // checks if the chatroom the user is trying to access (/:room) exists
-    db.get('chatrooms').findOne({
-        roomname: req.params.room
-    }).then((result) => {
-        if (result == null) {
-            return res.redirect('/chatroom/General');
-        } else {
-            // gets chatrooms from database
-            db.get('chatrooms').find({}).then((chatRooms) => {
-                // render the page
-                res.render('chatroom', {
-                    'chatrooms': chatRooms,
-                    target: '',
-                    roomName: req.params.room,
-                    currentUser: req.session.username,
-                    userId: req.session.userId,
-                    usersStatuses: allUsersStatuses.result
-                });
-            });
-        }
-    });
+    let chatRoom = await fetch(`${apiURL}/findChatRoom/${req.params.room}`)
+        .then(response => response.json());
+
+    if (chatRoom.result == null) {
+        return res.redirect('/chatroom/General');
+    } else {
+        // get list of all chat rooms
+        let chatRoomList = await fetch(`${apiURL}/getAllChatRooms`)
+            .then(response => response.json());
+ 
+        // render the page
+        res.render('chatroom', {
+            'chatrooms': chatRoomList.results,
+            target: '',
+            roomName: req.params.room,
+            currentUser: req.session.username,
+            userId: req.session.userId,
+            usersStatuses: allUsersStatuses.result
+        });
+    }
 });
 
 // Direct messages
-app.get('/dms', function(req, res) {
+app.get('/dms', function (req, res) {
     res.redirect('chatroom/General');
 });
 
-app.get('/dms/:target', async function(req, res) {
-    // checks if the chatroom the user is trying to access exists
+app.get('/dms/:target', async function (req, res) {
+    // checks if user is authenticated
     if (!req.session.authenticated) {
         res.redirect('/login');
     }
     // Get all current status.
     let allUsersStatuses = await fetch(`${apiURL}/status`)
         .then(response => response.json());
+
     // check if user (/:target) exists
     db.get('users').findOne({
         username: req.params.target
@@ -359,9 +360,9 @@ app.get('/dms/:target', async function(req, res) {
 });
 
 // WebSocket
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
     // does stuff when user connects
-    socket.on('user-connected', function(room, name, socketID, userId) {
+    socket.on('user-connected', function (room, name, socketID, userId) {
         socket.userId = userId;
         socket.join(room);
         // sends old chatroom messages from database to client
@@ -370,7 +371,7 @@ io.on('connection', function(socket) {
         }).then((docs) => {
 
             // sorts messages by time and date
-            docs.sort(function(a, b) {
+            docs.sort(function (a, b) {
                 return new Date(a.dateAndTime) - new Date(b.dateAndTime);
             });
 
@@ -383,7 +384,7 @@ io.on('connection', function(socket) {
     });
 
     // does stuff when user connects to private chat
-    socket.on('user-connected-private', function(target, name, socketID, userId) {
+    socket.on('user-connected-private', function (target, name, socketID, userId) {
         socket.userId = userId;
         socket.join(name + target);
 
@@ -401,7 +402,7 @@ io.on('connection', function(socket) {
                 let allMessages = user_messages.concat(target_messages)
 
                 // sort array by time
-                allMessages.sort(function(a, b) {
+                allMessages.sort(function (a, b) {
                     return new Date(a.dateAndTime) - new Date(b.dateAndTime);
                 });
 
@@ -414,7 +415,7 @@ io.on('connection', function(socket) {
     });
 
     // add new chat room to database
-    socket.on('create-chat-room', function(newChatRoom) {
+    socket.on('create-chat-room', function (newChatRoom) {
         // checks if chat room already exists
         db.get('chatrooms').findOne({
             roomname: newChatRoom.roomname
@@ -429,14 +430,14 @@ io.on('connection', function(socket) {
     });
 
     // receives message data from client
-    socket.on('chat message', function(room, data) {
+    socket.on('chat message', function (room, data) {
         // store data in database
         db.get('messages').insert({
             'userid': data.userid,
             'chatroomid': room,
             'dateAndTime': new Date(),
             'message': data.message
-        }, function(err, messageData) {
+        }, function (err, messageData) {
             // sends message to client
             io.in(room).emit('chat message', data.userid, data.message, messageData._id);
         });
@@ -444,7 +445,7 @@ io.on('connection', function(socket) {
     });
 
     // receives private message from client
-    socket.on('private message', function(target, data) {
+    socket.on('private message', function (target, data) {
         db.get('private-messages').insert({
             'senderID': data.userid,
             'receiverID': target,
@@ -462,7 +463,9 @@ io.on('connection', function(socket) {
         db.get(messageType + 'messages').update({
             _id: messageID
         }, {
-            $set: {message: message}
+            $set: {
+                message: message
+            }
         });
     });
 

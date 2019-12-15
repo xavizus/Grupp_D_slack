@@ -320,4 +320,42 @@ router.get('/deleteProfile/:userToDelete', (req, res) => {
     });
 });
 
+// find chat room
+router.get('/findChatRoom/:room', (req, res) => {
+    let db = req.db;
+    
+    db.get('chatrooms').findOne({
+        roomname: req.params.room
+    }, (err, data) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                result : data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
+// get chat room list
+router.get('/getAllChatRooms', (req, res) => {
+    let db = req.db;
+
+    db.get('chatrooms').find({}, {
+        projection: {
+            roomname: 1
+        }
+    }, (err, data) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                results : data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;
