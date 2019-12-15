@@ -414,8 +414,22 @@ io.on('connection', function (socket) {
             .then(response => response.json());
 
         if (chatRoom.result == null) {
-            db.get('chatrooms').insert(newChatRoom);
-            socket.emit('create-status', 'Chat room was created, refresh page')
+            await fetch(`${apiURL}/createChatRoom`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newChatRoom)
+                })
+                .then(response => response.json()).then(result => {
+                    if (result.result == "OK") {
+                        socket.emit('create-status', 'Chat room was created, refresh page');
+                    } else {
+                        socket.emit('create-status', 'There was a promblem when creating the room');
+                        //response.send(result);
+                    }
+                });
+
         } else {
             socket.emit('create-status', 'A room with this name already exists')
         }

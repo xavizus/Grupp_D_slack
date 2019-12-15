@@ -338,6 +338,25 @@ router.get('/findChatRoom/:room', (req, res) => {
     });
 });
 
+// create chat room
+router.post('/createChatRoom', (req, res) => {
+    let db = req.db;
+
+    db.get('chatrooms').insert({
+        roomname: req.body.roomname,
+        members: req.body.members
+    }, (err, result) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                result : 'OK'
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 // find user
 router.get('/findUser/:user', (req, res) => {
     let db = req.db;
