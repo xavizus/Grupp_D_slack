@@ -360,7 +360,7 @@ io.on('connection', function(socket) {
         }).then((docs) => {
             for (doc of docs) {
                 // sends old messages to the user that just connected
-                io.to(socketID).emit('chat message', doc.userid, doc.message);
+                io.to(socketID).emit('chat message', doc.userid, doc.message, doc._id);
             }
         });
         io.emit('status-change', socket.userId, 'Online');
@@ -419,12 +419,13 @@ io.on('connection', function(socket) {
             'chatroomid': room,
             'dateAndTime': new Date(),
             'message': data.message
-        }, function(err, data) {
-            console.log(data);
+        }, function(err, messageData) {
+            //console.log(data);
+            // sends message to client
+            io.in(room).emit('chat message', data.userid, data.message, messageData._id);
+            console.log(messageData._id);
         });
 
-        // sends message to client
-        io.in(room).emit('chat message', data.userid, data.message);
     });
 
     // receives private message from client
@@ -439,6 +440,13 @@ io.on('connection', function(socket) {
         // sends message to client
         io.in(target + data.userid).emit('private message', data.userid, data.message);
         io.in(data.userid + target).emit('private message', data.userid, data.message);
+    });
+
+    socket.on('delete-message', (messageID) => {
+        console.log(messageID);
+        db.get('messages').remove({
+            _id: messageID
+        });
     });
 
     // does stuff when user disconnects

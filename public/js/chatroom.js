@@ -40,9 +40,10 @@ $(function () {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function (user, message) {
+    socket.on('chat message', function (user, message, messageID) {
+        //console.log(messageID)
         let messageBox = $('<li>', {
-
+            id: messageID
         });
 
         let usernameLink = $('<a>', {
@@ -56,13 +57,24 @@ $(function () {
 
         let editButton = $('<button>', {
             text: 'Edit',
-            class: 'message-buttons'
+            class: 'edit-buttons'
+        });
+        editButton.on('click', (event) => {
+            console.log('edit')
         });
 
         let deleteButton = $('<button>', {
             text: 'Delete',
-            class: 'message-buttons'
+            class: 'delete-buttons'
         });
+        deleteButton.on('click', (event) => {
+            console.log(event.currentTarget.parentNode.id)
+            socket.emit('delete-message', event.currentTarget.parentNode.id);
+
+            event.currentTarget.parentNode.nextSibling.remove()
+            event.currentTarget.parentNode.remove();
+        });
+
         //console.log(chatMessage)
         if (user == currentUser) {
             messageBox

@@ -80,7 +80,7 @@ body {
     border: 1px #42454a solid;
 }
 
-.message-buttons {
+.edit-buttons, .delete-buttons {
     float: right;
     margin: 2px;
 }
