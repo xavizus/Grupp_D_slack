@@ -308,6 +308,7 @@ app.get('/chatroom/:room', async function(req, res) {
                 // render the page
                 res.render('chatroom', {
                     'chatrooms': chatRooms,
+                    target: '',
                     roomName: req.params.room,
                     currentUser: req.session.username,
                     userId: req.session.userId,
@@ -323,7 +324,14 @@ app.get('/dms', function(req, res) {
     res.redirect('chatroom/General');
 });
 
-app.get('/dms/:target', function(req, res) {
+app.get('/dms/:target', async function(req, res) {
+    // checks if the chatroom the user is trying to access exists
+    if (!req.session.authenticated) {
+        res.redirect('/login');
+    }
+    // Get all current status.
+    let allUsersStatuses = await fetch(`${apiURL}/status`)
+        .then(response => response.json());
     // check if user (/:target) exists
     db.get('users').findOne({
         username: req.params.target
@@ -335,12 +343,14 @@ app.get('/dms/:target', function(req, res) {
             db.get('users').find({}).then((users) => {
                 // gets chatrooms from database
                 db.get('chatrooms').find({}).then((chatRooms) => {
-                    res.render('dms', {
+                    res.render('chatroom', {
                         // render the page
                         'chatrooms': chatRooms,
                         target: req.params.target,
+                        roomName: '',
                         currentUser: req.session.username,
-                        allUsers: users
+                        userId: req.session.userId,
+                        usersStatuses: allUsersStatuses.result
                     });
                 });
             });
@@ -358,7 +368,7 @@ io.on('connection', function(socket) {
         db.get('messages').find({
             chatroomid: room
         }).then((docs) => {
-            
+
             // sorts messages by time and date
             docs.sort(function(a, b) {
                 return new Date(a.dateAndTime) - new Date(b.dateAndTime);
@@ -373,7 +383,8 @@ io.on('connection', function(socket) {
     });
 
     // does stuff when user connects to private chat
-    socket.on('user-connected-private', function(target, name, socketID) {
+    socket.on('user-connected-private', function(target, name, socketID, userId) {
+        socket.userId = userId;
         socket.join(name + target);
 
         // gets old messages sent by user
@@ -396,7 +407,7 @@ io.on('connection', function(socket) {
 
                 // sends old messages to the user that just connected
                 for (doc of allMessages) {
-                    io.to(socketID).emit('private message', doc.senderID, doc.message);
+                    io.to(socketID).emit('chat message', doc.senderID, doc.message, doc._id);
                 }
             })
         })
@@ -442,13 +453,13 @@ io.on('connection', function(socket) {
         });
 
         // sends message to client
-        io.in(target + data.userid).emit('private message', data.userid, data.message);
-        io.in(data.userid + target).emit('private message', data.userid, data.message);
+        io.in(target + data.userid).emit('chat message', data.userid, data.message);
+        io.in(data.userid + target).emit('chat message', data.userid, data.message);
     });
 
     // edit message
-    socket.on('edit-message', (message, messageID) => {
-        db.get('messages').update({
+    socket.on('edit-message', (message, messageID, messageType) => {
+        db.get(messageType + 'messages').update({
             _id: messageID
         }, {
             $set: {message: message}
@@ -456,8 +467,8 @@ io.on('connection', function(socket) {
     });
 
     // delete message
-    socket.on('delete-message', (messageID) => {
-        db.get('messages').remove({
+    socket.on('delete-message', (messageID, messageType) => {
+        db.get(messageType + 'messages').remove({
             _id: messageID
         });
     });

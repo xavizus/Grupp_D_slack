@@ -1,9 +1,16 @@
 $(function () {
     var socket = io();
+    if (target == '') {
+        console.log('LOL XD')
+    }
 
     // when user connects
     socket.on('connect', () => {
-        socket.emit('user-connected', roomName, currentUser, socket.id, userId);
+        if (target == '') {
+            socket.emit('user-connected', roomName, currentUser, socket.id, userId);
+        } else {
+            socket.emit('user-connected-private', target, currentUser, socket.id, userId);
+        }
     });
 
 
@@ -29,11 +36,17 @@ $(function () {
         e.preventDefault();
 
         // sends data to server
-        socket.emit('chat message', roomName, {
-            'userid': currentUser,
-            'message': $('#m').val()
-        });
-
+        if (target == '') {
+            socket.emit('chat message', roomName, {
+                'userid': currentUser,
+                'message': $('#m').val()
+            });
+        } else {
+            socket.emit('private message', target, {
+                'userid': currentUser,
+                'message': $('#m').val()
+            });
+        }
         // clears input box
         $('#m').val('');
         return false;
@@ -70,7 +83,11 @@ $(function () {
                 text: 'Save'
             });
             saveButton.on('click', (event) => {
-                socket.emit('edit-message', editArea.val(), event.currentTarget.parentNode.parentNode.id);
+                if (target == '') {
+                    socket.emit('edit-message', editArea.val(), event.currentTarget.parentNode.parentNode.id, '');
+                } else {
+                    socket.emit('edit-message', editArea.val(), event.currentTarget.parentNode.parentNode.id, 'private-');
+                }
 
                 $(messageDiv).html(editArea.val());
             });
@@ -94,7 +111,11 @@ $(function () {
             class: 'delete-buttons'
         });
         deleteButton.on('click', (event) => {
-            socket.emit('delete-message', event.currentTarget.parentNode.id);
+            if (target == '') {
+                socket.emit('delete-message', event.currentTarget.parentNode.id, '');
+            } else {
+                socket.emit('delete-message', event.currentTarget.parentNode.id, 'private-');
+            }
 
             event.currentTarget.parentNode.nextSibling.remove()
             event.currentTarget.parentNode.remove();
