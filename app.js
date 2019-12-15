@@ -443,49 +443,50 @@ io.on('connection', function (socket) {
         }
 
         await fetch(`${apiURL}/addMessage`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(messageObject)
-        })
-        .then(response => response.json()).then(data => {
-            if (data.response == "OK") {
-                let messageObj = data.result;
-                io.in(room).emit('chat message', messageObj.userid, messageObj.message, messageObj._id);
-            } else {
-                console.log('Something went wrong');
-            }
-        });
-
-
-        /*
-        // store data in database
-        db.get('messages').insert({
-            'userid': data.userid,
-            'chatroomid': room,
-            'dateAndTime': new Date(),
-            'message': data.message
-        }, function (err, messageData) {
-            // sends message to client
-            io.in(room).emit('chat message', data.userid, data.message, messageData._id);
-        });
-        */
-
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageObject)
+            })
+            .then(response => response.json()).then(data => {
+                if (data.response == "OK") {
+                    let messageObj = data.result;
+                    io.in(room).emit('chat message', messageObj.userid, messageObj.message, messageObj._id);
+                } else {
+                    console.log('Something went wrong');
+                }
+            });
     });
 
     // receives private message from client
-    socket.on('private message', function (target, data) {
-        db.get('private-messages').insert({
-            'senderID': data.userid,
-            'receiverID': target,
-            'dateAndTime': new Date(),
-            'message': data.message
-        });
+    socket.on('private message', async function (target, data) {
 
-        // sends message to client
-        io.in(target + data.userid).emit('chat message', data.userid, data.message);
-        io.in(data.userid + target).emit('chat message', data.userid, data.message);
+        let messageObject = {
+            senderID: data.userid,
+            receiverID: target,
+            dateAndTime: new Date(),
+            message: data.message
+        }
+
+        await fetch(`${apiURL}/addPrivateMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(messageObject)
+            })
+            .then(response => response.json()).then(msgData => {
+                if (msgData.response == "OK") {
+                    let msgObj = msgData.result;
+
+                    // sends message to client
+                    io.in(target + data.userid).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                    io.in(data.userid + target).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                } else {
+                    console.log('Something went wrong');
+                }
+            });
     });
 
     // edit message

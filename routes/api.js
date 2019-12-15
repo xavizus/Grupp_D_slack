@@ -484,4 +484,25 @@ router.post('/addMessage', (req, res) => {
     });
 });
 
+router.post('/addPrivateMessage', (req, res) => {
+    let db = req.db;
+
+    db.get('private-messages').insert({
+        senderID: req.body.senderID,
+        receiverID: req.body.receiverID,
+        dateAndTime: req.body.dateAndTime,
+        message: req.body.message
+    }, (err, result) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                response: "OK",
+                result: result
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;
