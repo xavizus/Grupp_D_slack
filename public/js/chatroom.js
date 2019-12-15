@@ -1,8 +1,5 @@
 $(function () {
     var socket = io();
-    if (target == '') {
-        console.log('LOL XD')
-    }
 
     // when user connects
     socket.on('connect', () => {
@@ -12,7 +9,6 @@ $(function () {
             socket.emit('user-connected-private', target, currentUser, socket.id, userId);
         }
     });
-
 
     // create chat room input form
     $('#createChatRoom').submit(function (e) {
@@ -71,6 +67,7 @@ $(function () {
             text: 'Edit',
             class: 'edit-buttons'
         });
+
         editButton.on('click', (event) => {
             let messageDiv = event.currentTarget.previousSibling.previousSibling;
             let oldMessage = messageDiv.innerHTML;
@@ -82,6 +79,7 @@ $(function () {
             let saveButton = $('<button>', {
                 text: 'Save'
             });
+
             saveButton.on('click', (event) => {
                 if (target == '') {
                     socket.emit('edit-message', editArea.val(), event.currentTarget.parentNode.parentNode.id, '');
@@ -95,6 +93,7 @@ $(function () {
             let closeButton = $('<button>', {
                 text: 'Close'
             });
+
             closeButton.on('click', (event) => {
                 $(messageDiv).html(oldMessage);
             });
@@ -110,6 +109,7 @@ $(function () {
             text: 'Delete',
             class: 'delete-buttons'
         });
+        
         deleteButton.on('click', (event) => {
             if (target == '') {
                 socket.emit('delete-message', event.currentTarget.parentNode.id, '');

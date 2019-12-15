@@ -306,7 +306,7 @@ app.get('/chatroom/:room', async function (req, res) {
         // get list of all chat rooms
         let chatRoomList = await fetch(`${apiURL}/getAllChatRooms`)
             .then(response => response.json());
- 
+
         // render the page
         res.render('chatroom', {
             'chatrooms': chatRoomList.results,
@@ -334,29 +334,26 @@ app.get('/dms/:target', async function (req, res) {
         .then(response => response.json());
 
     // check if user (/:target) exists
-    db.get('users').findOne({
-        username: req.params.target
-    }).then((result) => {
-        if (result == null) {
-            return res.redirect('/chatroom/General');
-        } else {
-            // gets users from database
-            db.get('users').find({}).then((users) => {
-                // gets chatrooms from database
-                db.get('chatrooms').find({}).then((chatRooms) => {
-                    res.render('chatroom', {
-                        // render the page
-                        'chatrooms': chatRooms,
-                        target: req.params.target,
-                        roomName: '',
-                        currentUser: req.session.username,
-                        userId: req.session.userId,
-                        usersStatuses: allUsersStatuses.result
-                    });
-                });
-            });
-        }
-    });
+    let user = await fetch(`${apiURL}/findUser/${req.params.target}`)
+        .then(response => response.json());
+
+    if (user.result == null) {
+        return res.redirect('/chatroom/General');
+    } else {
+        // get list of all chat rooms
+        let chatRoomList = await fetch(`${apiURL}/getAllChatRooms`)
+            .then(response => response.json());
+
+        // render the page
+        res.render('chatroom', {
+            'chatrooms': chatRoomList.results,
+            target: req.params.target,
+            roomName: '',
+            currentUser: req.session.username,
+            userId: req.session.userId,
+            usersStatuses: allUsersStatuses.result
+        });
+    }
 });
 
 // WebSocket
