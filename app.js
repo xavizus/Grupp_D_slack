@@ -555,10 +555,10 @@ io.on('connection', function (socket) {
 
                     // sends message to client
                     if (data.userid == target) {
-                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id);
+                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath);
                     } else {
-                        io.in(target + data.userid).emit('chat message', sender.result.username, msgObj.message, msgObj._id);
-                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id);
+                        io.in(target + data.userid).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath);
+                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath);
                     }
                 } else {
                     console.log('Something went wrong');
