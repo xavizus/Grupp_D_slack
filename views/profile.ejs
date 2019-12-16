@@ -38,7 +38,7 @@
                  
                 <a href="edituser/<%= data[0].username %>">Redigera konto</a><br>
                 
-                <a href="deleteuser/<%= data[0].username %>">Radera konto</a>
+                <a href="deleteuser/<%= data[0].username %>" onclick="return confirm('Are you sure you want to delete your profile?')">Radera konto</a>
             </div>
         </div>
     </div>
