@@ -9,13 +9,13 @@
       <% include ./partials/logout %>
       <div class="row">
           <div class="col-lg-5 col-sm-6 niceColors2 text-center center">
-            <h1>Redigeringssida för <%= data.username %></h1>
+            <h1>Editpage <%= data.username %></h1>
            <div class="card niceColors">
              <div class="card-body">
                    <form id="formEditUser" method="post" enctype="multipart/form-data" action="/profile/<%= data.username %>">
-                    <h6 class="card-text">Nytt namn: <input id="inputUserName" type="text" value="<%= data.username %>" name="username" /> </h6> 
-                    <h6 class="card-text">Ny email: <input id="inputUserEmail" type="text" value="<%= data.email %>" name="useremail" /> </h6>
-                    <h6 class="card-text">Ny bild: <input type="file" name="profile_image" id="profile_image"> </h6>  
+                    <h6 class="card-text">New name: <input id="inputUserName" type="text" value="<%= data.username %>" name="username" /> </h6> 
+                    <h6 class="card-text">New email: <input id="inputUserEmail" type="text" value="<%= data.email %>" name="useremail" /> </h6>
+                    <h6 class="card-text">New picture: <input type="file" name="profile_image" id="profile_image"> </h6>  
                     
                    <button type="submit" class="btn btn-primary">Submit Changes</button> <a href="/profile/<%= data.username %>" class="btn btn-danger">Back to profile</a> 
                   </form>

@@ -18,14 +18,14 @@
                              <img class="card-img-top" src="<%= data[0].profilePicturePath%>" 
                              alt="Profile picture" class="profilePicture">
                              <div class="card-body">
-                               <h4 class="card-title">Namn: <%= data[0].username %></h4>
-                               <h5 class="card-text" >Din email: <%= data[0].email %> </h5>
-                               <a href="edituser/<%= data[0].username %>" class="btn btn-info">Redigera konto</a><br>
-                               <a href="deleteuser/<%= data[0].username %>" onclick="return confirm('Are you sure you want to delete your profile?')" class="btn btn-danger">Radera konto</a>
+                               <h4 class="card-title">Name: <%= data[0].username %></h4>
+                               <h5 class="card-text" >Email: <%= data[0].email %> </h5>
+                               <a href="edituser/<%= data[0].username %>" class="btn btn-info">Edit user</a><br>
+                               <a href="deleteuser/<%= data[0].username %>" onclick="return confirm('Are you sure you want to delete your profile?')" class="btn btn-danger">Delete user</a>
                              </div>
                            
                            </div>
-                           <a href="/" class="btn btn-primary">Tillbaka till chatrum</a>
+                           <a href="/" class="btn btn-primary">Back to chatrooms</a>
                     </div>
             
                 </div>

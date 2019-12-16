@@ -17,11 +17,11 @@
                      alt="Profile picture" class="profilePicture">
                      <div class="card-body">
                        <h4 class="card-title">Namn: <%= data[0].username %></h4>
-                       
+                       <a href="/dms/<%= data[0].username %>" class="btn btn-secondary">Message <%= data[0].username %> ?</a>
                    </div>
                    
                    </div>
-                   <a href="/" class="btn btn-primary">Tillbaka till chatrum</a>
+                   <a href="/" class="btn btn-primary">Back to chatrooms</a>
             </div>
     
         </div>
