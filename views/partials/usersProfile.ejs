@@ -1,0 +1,14 @@
+<div id="UserStatus">
+    <ul class="list-group"></ul>
+    <% for(let index = 0; index < usersStatuses.length; index++) { %>
+        <li class=" <%= (usersStatuses[index].status) == 
+        'Online' ? 'text-success' : 'text-secondary' %>">
+            <a id="<%=usersStatuses[index]._id %>" 
+                href="/profile/<%= usersStatuses[index].username %>" 
+                class="<%= (usersStatuses[index].status) == 
+                'Online' ? 'text-success' : 'text-secondary' %>"> 
+                <%= usersStatuses[index].username %> </a>
+            </li>
+    <% } %>
+    </ul>
+</div>
