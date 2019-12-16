@@ -50,10 +50,21 @@ $(function () {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function (user, message, messageID) {
+    socket.on('chat message', function (user, message, messageID, picturePath) {
         let messageBox = $('<li>', {
             id: messageID
         });
+
+        let imgContainer = $('<div>', {
+            class: 'imgContainer'
+        });
+
+        let profilePic = $('<img>', {
+            src: picturePath,
+            alt: 'profile picture',
+            class: 'profilePictureChat'
+        });
+        imgContainer.append(profilePic)
 
         let usernameLink = $('<a>', {
             href: '/profile/' + user,
@@ -134,6 +145,7 @@ $(function () {
 
         if (user == currentUser) {
             messageBox
+                .append(imgContainer)
                 .append(usernameLink)
                 .append(chatMessage)
                 .append(deleteButton)
@@ -141,6 +153,7 @@ $(function () {
             $('#messages').append(messageBox);
         } else {
             messageBox
+                .append(imgContainer)
                 .append(usernameLink)
                 .append(chatMessage);
             $('#messages').append(messageBox);

@@ -429,7 +429,7 @@ io.on('connection', function (socket) {
             await fetch(`${apiURL}/getUser/${doc.userid}`)
             .then(response => response.json()).then((userData) => {
                 // sends old messages to the user that just connected
-                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id);
+                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id, userData.result.profilePicturePath);
             });
         }
 
@@ -465,7 +465,7 @@ io.on('connection', function (socket) {
             .then(response => response.json()).then((userData) => {
                 // sends old messages to the user that just connected
                 
-                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id);
+                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id, userData.result.profilePicturePath);
             });
         }
 
@@ -521,7 +521,7 @@ io.on('connection', function (socket) {
             .then(response => response.json()).then(data => {
                 if (data.response == "OK") {
                     let messageObj = data.result;
-                    io.in(room).emit('chat message', user.result.username, messageObj.message, messageObj._id);
+                    io.in(room).emit('chat message', user.result.username, messageObj.message, messageObj._id, user.result.profilePicturePath);
                 } else {
                     console.log('Something went wrong');
                 }
