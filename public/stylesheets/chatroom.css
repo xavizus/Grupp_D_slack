@@ -6,7 +6,7 @@
 
 body {
     /*font: 13px Helvetica, Arial;*/
-    font-family: 'Merriweather', serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 #sendMessage {
@@ -16,6 +16,8 @@ body {
     margin-top: 2%;
     
 }
+
+
 
 #sendMessage input {
     border: 0;
@@ -31,6 +33,7 @@ body {
 }
 
 #messages, .roomList {
+    
     list-style-type: none;
     margin: 0;
 }
@@ -139,10 +142,7 @@ li {
     display: inline-block;
 }
 
-.loggedIn {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    
-}
+
 .imgContainer {
     float: left;
     width: 60px;
