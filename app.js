@@ -261,43 +261,56 @@ app.get('/profile/edituser/:username', async (req, res) => {
     }
 });
 
-//POST the data to Edit the users ... Denna kod kan förbättras(kanske skicka med filnamnet på något sätt)
+//POST the data to Edit the users
 app.post('/profile/:olduser', async (request, response) => {
+    let db = request.db;
+    let usersCollection = db.get('users');  
+    let oldUserName = request.params.olduser;
 
-    try {
-        let newUserName = request.body.username;
-        let newEmail = request.body.useremail;
-        let oldUserName = request.params.olduser;
-        let changedData = {
-            'username': newUserName,
-            'email': newEmail
-        }
-
-        if (request.files) {
-            let newImageName = request.files.profile_image;
-            newImageName.mv('./public/images/' + newImageName.name);
-            changedData.profilePicturePath = "/images/" + newImageName.name;
-        }
-
-        await fetch(`${apiURL}/editProfileData/${oldUserName}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(changedData)
-        }).then((response => response.json())).then(result => {
-            if (result.result == "OK") {
-                request.session.username = newUserName;
-                response.redirect('/profile/' + newUserName);
-            } else {
-                response.send(result);
+    usersCollection.findOne({
+        username: request.body.username
+    }, (err, data) => {
+        if(data === null) {
+            console.log("detta användarnamn kan användas");
+            try {
+                let newUserName = request.body.username;
+                let newEmail = request.body.useremail;
+                let changedData = {
+                    'username': newUserName,
+                    'email': newEmail
+                }
+        
+                if (request.files) {
+                    let newImageName = request.files.profile_image;
+                    newImageName.mv('./public/images/' + newImageName.name);
+                    changedData.profilePicturePath = "/images/" + newImageName.name;
+                }
+        
+                fetch(`${apiURL}/editProfileData/${oldUserName}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(changedData)
+                }).then((response => response.json())).then(result => {
+                    if (result.result == "OK") {
+                        request.session.username = newUserName;
+                        response.redirect('/profile/' + newUserName);
+                    } else {
+                        response.send(result);
+                    }
+                });
+        
+        
+            } catch (err) {
+                response.status(500).send(err);
             }
-        });
-
-
-    } catch (err) {
-        response.status(500).send(err);
-    }
+        } else {
+            console.log("Denna användare finns redan");
+            response.redirect('/profile/' + oldUserName);
+        }
+    });
+    
 });
 
 //Send delete info to api and destroy session if it returns with a deleted value

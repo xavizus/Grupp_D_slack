@@ -267,6 +267,8 @@ router.get('/editProfile/:userName', (req, res) => {
     let db = req.db;
     let usersCollection = db.get('users');
 
+    
+
     usersCollection.findOne({
         username: usernameToEdit
     }, (err, data) => {
