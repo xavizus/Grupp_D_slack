@@ -3,37 +3,29 @@
 
 <head>
     <% include ./partials/header %>
-    <% include ./partials/logout %>
-        <title>profil</title>
+        <title>profilepage</title>
 </head>
 
 <body>
-    <div class="container h-50">
-        <div class="row h-100 justify-content-center align-items-center">
-            <div class="col-sm-6">
-                <h1>Profilsida för <%= data[0].username %></h1>
-                <table>
-                    <tr>
-                    </tr>
-                    <tr>
-                        <td>
-                            Profile username: <%= data[0].username %>
-                        </td>
-                    </tr>
-                    <tr>
-                        <a href="/">Tillbaka till chatrum</a> 
-                    </tr>
-                </table>
+    <div class="container-fluid niceColors3">
+        <% include ./partials/logout %>
+        <div class="row">
+            <div class="col-lg-3 col-sm-6 niceColors2 text-center center">
+             
+             <div class="card niceColors">
+                     <img class="card-img-top" src="<%= data[0].profilePicturePath%>" 
+                     alt="Profile picture" class="profilePicture">
+                     <div class="card-body">
+                       <h4 class="card-title">Namn: <%= data[0].username %></h4>
+                       
+                   </div>
+                   
+                   </div>
+                   <a href="/" class="btn btn-primary">Tillbaka till chatrum</a>
             </div>
-            
-            <div class="col-sm-6">       
-                <div class="namePic">
-                    <img src="<%= data[0].profilePicturePath%>" alt="Profile picture" class="profilePicture">
-                  </div>
-            </div>
+    
         </div>
     </div>
-
 </body>
 
 </html>
