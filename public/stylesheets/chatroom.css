@@ -5,8 +5,8 @@
 }
 
 body {
-    font: 13px Helvetica, Arial;
-    font-family: 'Open Sans', sans-serif;
+    /*font: 13px Helvetica, Arial;*/
+    font-family: 'Merriweather', serif;
 }
 
 #sendMessage {
