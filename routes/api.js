@@ -536,4 +536,22 @@ router.delete('/deleteMessage', (req, res) => {
     });
 });
 
+router.get('/getUser/:userID', (req, res) => {
+    let db = req.db;
+
+    db.get('users').findOne({
+        _id: req.params.userID
+    }, (err, data) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                response: "OK",
+                result: data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
 module.exports = router;

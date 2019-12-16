@@ -1,5 +1,6 @@
 $(function () {
     var socket = io();
+    console.log(target);
 
     // when user connects
     socket.on('connect', () => {
@@ -34,12 +35,12 @@ $(function () {
         // sends data to server
         if (target == '') {
             socket.emit('chat message', roomName, {
-                'userid': currentUser,
+                'userid': userId,
                 'message': $('#m').val()
             });
         } else {
             socket.emit('private message', target, {
-                'userid': currentUser,
+                'userid': userId,
                 'message': $('#m').val()
             });
         }

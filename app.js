@@ -373,6 +373,7 @@ app.get('/dms/:target', async function (req, res) {
     // check if user (/:target) exists
     let user = await fetch(`${apiURL}/findUser/${req.params.target}`)
         .then(response => response.json());
+    console.log(user.result._id);
 
     if (user.result == null) {
         return res.redirect('/chatroom/General');
@@ -384,7 +385,7 @@ app.get('/dms/:target', async function (req, res) {
         // render the page
         res.render('chatroom', {
             'chatrooms': chatRoomList.results,
-            target: req.params.target,
+            target: user.result._id,
             roomName: '',
             currentUser: req.session.username,
             userId: req.session.userId,
@@ -400,6 +401,8 @@ io.on('connection', function (socket) {
         socket.userId = userId;
         socket.join(room);
 
+        
+
         // sends old chatroom messages from database to client
         let oldMessages = await fetch(`${apiURL}/getMessages/${room}`)
             .then(response => response.json());
@@ -410,8 +413,11 @@ io.on('connection', function (socket) {
         });
 
         for (doc of oldMessages.results) {
-            // sends old messages to the user that just connected
-            io.to(socketID).emit('chat message', doc.userid, doc.message, doc._id);
+            await fetch(`${apiURL}/getUser/${doc.userid}`)
+            .then(response => response.json()).then((userData) => {
+                // sends old messages to the user that just connected
+                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id);
+            });
         }
 
         io.emit('status-change', socket.userId, 'Online');
@@ -420,14 +426,16 @@ io.on('connection', function (socket) {
     // does stuff when user connects to private chat
     socket.on('user-connected-private', async function (target, name, socketID, userId) {
         socket.userId = userId;
-        socket.join(name + target);
+        socket.join(userId + target);
+
+
 
         // get old messages sent by user
-        let userPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${name}/${target}`)
+        let userPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${userId}/${target}`)
             .then(response => response.json());
 
         // get old messages sent by receiver
-        let targetPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${target}/${name}`)
+        let targetPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${target}/${userId}`)
             .then(response => response.json());
 
         // combine messages to one array
@@ -440,7 +448,12 @@ io.on('connection', function (socket) {
 
         // sends old messages to the user that just connected
         for (doc of allMessages) {
-            io.to(socketID).emit('chat message', doc.senderID, doc.message, doc._id);
+            await fetch(`${apiURL}/getUser/${doc.senderID}`)
+            .then(response => response.json()).then((userData) => {
+                // sends old messages to the user that just connected
+                
+                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id);
+            });
         }
 
         io.emit('status-change', socket.userId, 'Online');
@@ -481,6 +494,10 @@ io.on('connection', function (socket) {
             message: data.message
         }
 
+        let user = await fetch(`${apiURL}/getUser/${data.userid}`)
+            .then(response => response.json());
+            //console.log(user);
+            
         await fetch(`${apiURL}/addMessage`, {
                 method: 'POST',
                 headers: {
@@ -491,7 +508,7 @@ io.on('connection', function (socket) {
             .then(response => response.json()).then(data => {
                 if (data.response == "OK") {
                     let messageObj = data.result;
-                    io.in(room).emit('chat message', messageObj.userid, messageObj.message, messageObj._id);
+                    io.in(room).emit('chat message', user.result.username, messageObj.message, messageObj._id);
                 } else {
                     console.log('Something went wrong');
                 }
@@ -508,6 +525,10 @@ io.on('connection', function (socket) {
             message: data.message
         }
 
+        let sender = await fetch(`${apiURL}/getUser/${data.userid}`)
+            .then(response => response.json());
+            console.log(sender.result.username)
+
         await fetch(`${apiURL}/addPrivateMessage`, {
                 method: 'POST',
                 headers: {
@@ -521,10 +542,10 @@ io.on('connection', function (socket) {
 
                     // sends message to client
                     if (data.userid == target) {
-                        io.in(data.userid + target).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id);
                     } else {
-                        io.in(target + data.userid).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
-                        io.in(data.userid + target).emit('chat message', msgObj.senderID, msgObj.message, msgObj._id);
+                        io.in(target + data.userid).emit('chat message', sender.result.username, msgObj.message, msgObj._id);
+                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id);
                     }
                 } else {
                     console.log('Something went wrong');
