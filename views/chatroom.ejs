@@ -34,12 +34,19 @@
                     <h3>Chat rooms</h3>
                     <ul>
                         <% for (chatroom of chatrooms) { %>
+                            <% if(chatroom.roomname == roomName) { %>
+                                <li class ="roomList">
+                                    <a href="/chatroom/<%= chatroom.roomname %>" class="active">
+                                       # <%= chatroom.roomname %>
+                                    </a>
+                                </li>
+                           <% } else { %>
                             <li class ="roomList">
                                 <a href="/chatroom/<%= chatroom.roomname %>" class="text-secondary">
                                    # <%= chatroom.roomname %>
                                 </a>
                             </li>
-                            <% } %>
+                            <% } }%>
                     </ul>
                     <div id="direct-messages">
                         <h3>Direct messages</h3>
