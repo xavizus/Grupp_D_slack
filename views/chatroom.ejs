@@ -3,6 +3,7 @@
 
 <head>
     <title>Socket.IO chat</title>
+  
     <% include ./partials/header %>
         
 
@@ -18,18 +19,18 @@
     </script>
     <div class="container-fluid">
         <div class="row">
-            <div id="chatrooms" class="col-sm-2">
+            <div id="chatrooms" class="col-sm-3">
+                <p class="loggedIn">Logged in as <%=currentUser%></p>
+                <p class="loggedIn"><a href="/profile/<%=currentUser%>" class="btn btn-info">View Profile</a></p>
                 <% include ./partials/logout %>
                     <h3>Create chat room</h3>
-                    <form id="createChatRoom" action="">
-                        <input id="newRoomName" autocomplete="off"><button type="submit">Create</button>
+                    <form id="createChatRoom" action="" class="form-group row">
+                        <input id="newRoomName" autocomplete="off" class="form-control ml-3">
+                        <button type="submit" class="btn btn-secondary">Create</button>
                     </form>
 
-                    <p>Logged in as
-                        <%=currentUser%>
-                            <a href="/profile/<%=currentUser%>">View Profile</a>
-                    </p>
-
+                    
+                    
                     <h3>Chat rooms</h3>
                     <ul>
                         <% for (chatroom of chatrooms) { %>
@@ -54,14 +55,14 @@
                     </ul>
                    
                 </div>
-                <form id="sendMessage" action="" class="">
-                    <p>Type here</p>
-                    <input id="m" autocomplete="off"><button class="btn-primary">Send</button>
+                <form id="sendMessage" action="" class="form-group row">
+                    <p id="textInfo">Message</p>
+                    <input id="m" autocomplete="off" class="form-control"><button class="btn-primary">Send</button>
                 </form>
             </div>
         
             <div id="All-users" class="col-sm-2">
-                <h3>All users</h3>
+                <h3>All user profiles</h3>
                 <% include ./partials/usersProfile %>
             </div>
         </div>
