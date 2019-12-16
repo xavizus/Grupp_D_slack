@@ -3,45 +3,34 @@
 
 <head>
     <% include ./partials/header %>
-    <% include ./partials/logout %>
+   
         <title>profil</title>
 </head>
 
 <body>
-    <div class="container h-50">
-        <div class="row h-100 justify-content-center align-items-center">
-            <div class="col-sm-6">
-                <h1>Profilsida för <%= data[0].username %></h1>
-                <table>
-                    <tr>
-                    </tr>
-                    <tr>
-                        <td>
-                            Ditt username: <%= data[0].username %>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>   
-                            Din email: <%= data[0].email %> 
-                        </td>  
-                    </tr>
-                    <tr>
-                        <a href="/">Tillbaka till chatrum</a> 
-                    </tr>
-                </table>
-            </div>
+
+        <div class="container-fluid niceColors3">
+                <% include ./partials/logout %>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 niceColors2 text-center center">
             
-            <div class="col-sm-6">       
-                <div class="namePic">
-                    <img src="<%= data[0].profilePicturePath%>" alt="Profile picture" class="profilePicture">
-                  </div>
-                 
-                <a href="edituser/<%= data[0].username %>">Redigera konto</a><br>
-                
-                <a href="deleteuser/<%= data[0].username %>" onclick="return confirm('Are you sure you want to delete your profile?')">Radera konto</a>
+                     <div class="card niceColors">
+                             <img class="card-img-top" src="<%= data[0].profilePicturePath%>" 
+                             alt="Profile picture" class="profilePicture">
+                             <div class="card-body">
+                               <h4 class="card-title">Namn: <%= data[0].username %></h4>
+                               <p class="card-text" >Din email: <%= data[0].email %> </p>
+                               <a href="edituser/<%= data[0].username %>" class="btn btn-info">Redigera konto</a><br>
+                               <a href="deleteuser/<%= data[0].username %>" onclick="return confirm('Are you sure you want to delete your profile?')" class="btn btn-danger">Radera konto</a>
+                             </div>
+                             <a href="/" class="btn btn-primary">Tillbaka till chatrum</a>
+                           </div>
+            
+                    </div>
+            
+                </div>
             </div>
-        </div>
-    </div>
+
 
 </body>
 

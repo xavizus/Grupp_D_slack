@@ -11,3 +11,27 @@ body,html{
     max-width: 50px; 
     max-height: 50px;
 }
+
+.niceColors {
+    background-color: #42454a;
+    color : white;
+    
+}
+
+.niceColors2 {
+    background-color: #2f3136; ;
+    color : white;
+}
+
+.niceColors3 {
+    background-color: #2f3136;
+    color : white;
+}
+
+.card {
+    margin: 0 auto;
+}
+
+.center {
+    margin: 0 auto;
+}
