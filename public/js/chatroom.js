@@ -66,7 +66,7 @@ $(function () {
 
         let editButton = $('<button>', {
             text: 'Edit',
-            class: 'edit-buttons'
+            class: 'edit-buttons btn-info'
         });
 
         function edit(event) {
@@ -74,11 +74,13 @@ $(function () {
             let oldMessage = messageDiv.innerHTML;
 
             let editArea = $('<textarea>', {
-                html: oldMessage
+                html: oldMessage,
+                class: 'editArea'
             });
 
             let saveButton = $('<button>', {
-                text: 'Save'
+                text: 'Save',
+                class: 'btn-info'
             });
 
             saveButton.on('click', (event) => {
@@ -92,7 +94,8 @@ $(function () {
             });
 
             let closeButton = $('<button>', {
-                text: 'Close'
+                text: 'Close',
+                class: 'btn-danger'
             });
 
             closeButton.on('click', (event) => {
@@ -115,7 +118,7 @@ $(function () {
 
         let deleteButton = $('<button>', {
             text: 'Delete',
-            class: 'delete-buttons'
+            class: 'delete-buttons btn-danger'
         });
 
         deleteButton.on('click', (event) => {
