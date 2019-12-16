@@ -7,9 +7,14 @@
 
 
 <body>
-    <div class="container h-100">
-        <div class="row h-100 justify-content-center align-items-center">
-            <div class="col-sm-6">
+
+    
+    <div class="container-fluid niceColors3 h-100">
+        <div class="row h-100 justify-content-center align-items-center welcome">
+            <div class="col-lg-5 col-sm-6 niceColors2 center">
+                <h1 class="text-center">Create new account</h1>
+
+                <div class="card-body">
                 <form id="newAccountForm" action="/newAccount" method="POST">
                     <div class="form-group">
                         <label for="email">Email address</label>
@@ -47,7 +52,9 @@
                         </div>
                     </div>
                     <button type="submit" id="submitButton" class="btn btn-primary" disabled>Submit</button>
+                    <a class="btn btn-secondary float-right" href="/login">Go Back</a>
                 </form>
+            </div>
             </div>
         </div>
     </div>
