@@ -46,7 +46,8 @@ router.get('/getUserInfo/:email', (request, response) => {
     }, {
         projection: {
             "username": 1,
-            _id: 1
+            _id: 1,
+            userRole: 1
         }
     }, (error, data) => {
         if (error) {
@@ -62,7 +63,6 @@ router.get('/getUserInfo/:email', (request, response) => {
             response.send(responseObject);
             return;
         }
-
         responseObject.result = data[0];
 
         response.send(responseObject);
@@ -116,7 +116,8 @@ router.post('/addUser', (request, response) => {
         "username": request.body.username,
         "email": request.body.email,
         "password": request.body.password,
-        "profilePicturePath": "/images/default.png"
+        "profilePicturePath": "/images/default.png",
+        "userRole" : "normalUser"
     }, (error, result) => {
         if (error) {
             response.send({

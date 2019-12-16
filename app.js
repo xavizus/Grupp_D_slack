@@ -139,6 +139,8 @@ app.post('/login', async (request, response) => {
             // Store the returned user info in our session
             request.session.username = userInfoData.result.username;
             request.session.userId = userInfoData.result._id;
+            request.session.userRole = userInfoData.result.userRole;
+            console.log(request.session.userRole);
 
             // Prepare post request to api.
             let dataToSend = {
@@ -221,6 +223,7 @@ app.post('/newAccount', (request, response) => {
 app.get('/profile/:name', async function (req, res) {
     let sessionUserName = req.session.username;
     let currentUserName = req.params.name;
+    let sessionUserRole = req.session.userRole;
 
     let result = await fetch(`${apiURL}/getProfileData/${currentUserName}`)
         .then((response => response.json()));
@@ -234,19 +237,27 @@ app.get('/profile/:name', async function (req, res) {
         } else {
             res.send("user does not exist");
         }
-    } else if (sessionUserName !== currentUserName) {
-        console.log("visa visitorprofile");
+    }
+     else if (sessionUserName !== currentUserName) {
         if (result.results.length != 0) {
-            res.render('./visitorProfile.ejs', {
-                "data": result.results
-            });
+            if(sessionUserRole == "admin") {
+                console.log("visa adminview");
+                res.render('./adminView.ejs', {
+                    "data": result.results
+                });
+            }else if(sessionUserRole == null || sessionUserRole == "normalUser") {
+                console.log("visa visitorprofile");
+                res.render('./visitorProfile.ejs', {
+                    "data": result.results
+                });
+            }
         } else {
             res.send("the user you look for does not exist");
         }
     }
 })
 
-// GET the data needed to edit the database
+// GET the data needed to edit the user
 app.get('/profile/edituser/:username', async (req, res) => {
     let currentUserName = req.params.username;
 
@@ -261,7 +272,7 @@ app.get('/profile/edituser/:username', async (req, res) => {
     }
 });
 
-//POST the data to Edit the users
+//POST the data to Edit the users, check if username doesnt exist
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
     let usersCollection = db.get('users');  
