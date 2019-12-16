@@ -6,25 +6,28 @@
 
 body {
     font: 13px Helvetica, Arial;
+    font-family: 'Open Sans', sans-serif;
 }
 
 #sendMessage {
    
     bottom: 0;
     width: 100%;
-    margin-top: 5%;
+    margin-top: 2%;
+    
 }
 
 #sendMessage input {
     border: 0;
     padding: 1%;
-    width: 64%;
+    width: 84%;
+    padding: 20px;
 }
 
 #sendMessage button {
     width: 14%;
     border: none;
-    padding: 10px;
+   
 }
 
 #messages, .roomList {
@@ -44,9 +47,10 @@ li {
 
 #chat-container {
     overflow: auto;
-    height: 64vh;
+    height: 70vh;
     background-color: #2f3136;
     color: white;
+    margin-top: 3%;
     
 }
 
@@ -120,17 +124,19 @@ li {
     padding: 1%;
 }
 
-#createChatRoom, #newRoomName {
-    background-color: #202225;
+#newRoomName, #m {
+    background-color: #36393f;
     color: whitesmoke;
    
 }
 
+
+#createChatRoom, #newRoomName {
+    border: 0;
+}
 #newRoomName {
     width: 60%;
     display: inline-block;
-    
-    
 }
 
 .loggedIn {
@@ -149,3 +155,10 @@ li {
     border-radius: 50%;
     margin: 0 auto;
 }
+
+#testing {
+    border: 0px white solid;
+    border-radius: 40%;
+}
+
+
