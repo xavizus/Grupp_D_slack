@@ -34,12 +34,16 @@ require('dotenv').config({
 
 // Server port
 let httpPort = process.env.npm_package_config_port || 8080;
+// URL to api.
 let apiURL = `http://localhost:${httpPort}/api/v1`
 
+// MongoDB URI
 let mongoDB_URI = `${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_SERVER}/${process.env.MONGODB_DATABASE}?authSource=${process.env.MONGODB_DATABASE}&w=1`
+
 // Monk DB-connection
 const db = monk(mongoDB_URI);
 
+// Datastore for Session (Store session in MongoDB)
 let store = new MongoDBStore({
     uri: `mongodb://${mongoDB_URI}`,
     collection: 'clientSessions'
@@ -61,7 +65,7 @@ app.use(fileUpload({
     createParentPath: true
 }));
 
-// make it possible to use database connection elsewhere.
+// make it possible to use database connection in requests.
 app.use(function (req, res, next) {
     req.db = db;
     next();
@@ -81,7 +85,7 @@ app.use(require('express-session')({
 // create route for our api
 app.use('/api/v1', apiRouter);
 
-
+// Root URL
 app.get('/', (request, response) => {
     if (request.session.authenticated) {
         response.redirect('/chatroom');
@@ -90,6 +94,7 @@ app.get('/', (request, response) => {
     }
 });
 
+// Login url
 app.get('/login', (request, response) => {
     if (request.session.authenticated) {
         response.redirect('/chatroom');
@@ -101,31 +106,47 @@ app.get('/login', (request, response) => {
     }
 });
 
+// POST login
 app.post('/login', async (request, response) => {
+
     let email = request.body.email;
 
     let password = request.body.password;
+
+    // if any are empty
     if ((email == '') || password == '') {
         response.redirect('/login' + '/?errorMSG=User or password not matches!');
         return;
     }
+
+    // get password hash and prase it to json.
     let data = await fetch(`${apiURL}/getPasswordHash/${email}`)
         .then((response => response.json()));
+
+    // If we got data bak.
     if (data.result) {
+        // Compare the hashed password with the password that was given.
         let hashedPassword = await bcrypt.compare(password, data.result);
+        // if the hashPassword are correct
         if (hashedPassword) {
-            // Set data to the session
+            // mark the user as authenticated.
             request.session.authenticated = true;
+
+            // get user info
             let userInfoData = await fetch(`${apiURL}/getUserInfo/${email}`)
                 .then((response => response.json()));
+
+            // Store the returned user info in our session
             request.session.username = userInfoData.result.username;
             request.session.userId = userInfoData.result._id;
 
+            // Prepare post request to api.
             let dataToSend = {
                 userId: request.session.userId,
                 status: "Online"
             };
 
+            // update the status for the user that just logged in.
             let receivedData = await fetch(`${apiURL}/updateStatus`, {
                 method: 'POST',
                 headers: {
@@ -134,11 +155,13 @@ app.post('/login', async (request, response) => {
                 body: JSON.stringify(dataToSend)
             });
 
+            // if we did not recive an OK message, respond with error message.
             if (!receivedData.result == "OK") {
                 response.send(receivedData.message);
             }
-            // Save the session so you can use it later.
+            // Save the session
             request.session.save();
+
             response.redirect('/chatroom');
 
         } else {
@@ -149,23 +172,34 @@ app.post('/login', async (request, response) => {
     }
 });
 
+// get-request for new account
 app.get('/newAccount', (request, response) => {
     response.render('newAccount', {
         title: "Discord V2"
     });
 });
 
+// post-request for new account
 app.post('/newAccount', (request, response) => {
+
+    // store the data in variables.
     let email = request.body.email;
     let username = request.body.username;
     let password = request.body.password;
+
+    // Prepare post request
     let data = {
         email: email,
         username: username
     };
+    // generate a salt for passowrd
     bcrypt.genSalt(10, (err, salt) => {
+        // Hash the password.
         bcrypt.hash(password, salt, (err, hash) => {
+            // add the hashed passowrd to the post request object
             data.password = hash;
+
+            // POST data to API.
             fetch(`${apiURL}/addUser`, {
                 method: 'POST',
                 headers: {
@@ -545,8 +579,9 @@ io.on('connection', function (socket) {
             });
     });
 
-    // does stuff when user disconnects
+    // when user is dissconnected
     socket.on('disconnect', () => {
+        // emit to everyone that the dissconnected user is offline
         io.emit('status-change', socket.userId, 'Offline');
 
         let dataToSend = {
@@ -554,6 +589,7 @@ io.on('connection', function (socket) {
             status: "Offline"
         };
 
+        // update status of the user that discconected.
         fetch(`${apiURL}/updateStatus`, {
             method: 'POST',
             headers: {

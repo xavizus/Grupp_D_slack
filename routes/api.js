@@ -1,25 +1,7 @@
 let express = require('express');
 let router = express.Router();
 
-router.get('/', (request, response) => {
-
-    let db = request.db;
-
-    let collection = db.get('users');
-
-    collection.find({}, {}, function (e, docs) {
-        // Create a response object
-        let responseObject = {
-            response: "OK"
-        };
-        // store our result in response object
-        responseObject.result = docs;
-
-        // Send that object through the api.
-        response.send(responseObject);
-    });
-});
-
+// return password hash based on Email address.
 router.get('/getPasswordHash/:email', (request, response) => {
     let email = request.params.email;
     let responseObject = {
@@ -49,6 +31,7 @@ router.get('/getPasswordHash/:email', (request, response) => {
 
 });
 
+// get user info based of email address.
 router.get('/getUserInfo/:email', (request, response) => {
     let email = request.params.email;
     let responseObject = {
@@ -87,6 +70,8 @@ router.get('/getUserInfo/:email', (request, response) => {
     });
 });
 
+// check if a data type exist and if the wanted data exists.
+// used for checking for usersname and email
 router.get('/exist/:dataType/:dataToSearch', (request, response) => {
     const allowedTypes = [
         "email",
@@ -123,6 +108,7 @@ router.get('/exist/:dataType/:dataToSearch', (request, response) => {
 
 });
 
+// add a new user from post request
 router.post('/addUser', (request, response) => {
     let db = request.db;
     let collectionUsers = db.get('users');
@@ -145,6 +131,7 @@ router.post('/addUser', (request, response) => {
     });
 });
 
+// get UserId's status
 router.get('/status/:userId', (request, response) => {
     let userId = request.params.userId;
 
@@ -180,6 +167,7 @@ router.get('/status/:userId', (request, response) => {
 
 });
 
+// get all users statuses.
 router.get('/status', (request, response) => {
     let db = request.db;
     let collectionUsers = db.get('users');
@@ -209,6 +197,7 @@ router.get('/status', (request, response) => {
     });
 });
 
+// update a specific users status.
 router.post('/updateStatus', (request, response) => {
     let db = request.db;
     let collectionUsers = db.get('users');
