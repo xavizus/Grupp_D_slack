@@ -68,7 +68,7 @@ $(function () {
             class: 'edit-buttons'
         });
 
-        editButton.on('click', (event) => {
+        function edit(event) {
             let messageDiv = event.currentTarget.previousSibling.previousSibling;
             let oldMessage = messageDiv.innerHTML;
 
@@ -103,7 +103,14 @@ $(function () {
                 .append(editArea)
                 .append(saveButton)
                 .append(closeButton);
-        });
+
+            editButton.off().on('click', (event) => {
+                $(messageDiv).html(oldMessage);
+                editButton.off().on('click', edit);
+            });
+        }
+
+        editButton.on('click', edit);
 
         let deleteButton = $('<button>', {
             text: 'Delete',
