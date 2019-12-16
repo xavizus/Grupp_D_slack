@@ -7,10 +7,6 @@ body,html{
     height: 400px;
 }
 
-.profilePictureChat {
-    max-width: 50px; 
-    max-height: 50px;
-}
 
 .niceColors {
     background-color: #42454a;
