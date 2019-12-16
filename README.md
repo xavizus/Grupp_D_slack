@@ -20,7 +20,7 @@ Trello:
 - [x] Skapa konto/logga in med det kontot (email och alias)
 - [x] Kunna ladda upp en fil i valfritt användningsområde
 - [x] Spara meddelanden, konton osv i databas
-- [ ] Visa att man behärskar Node-kraven
+- [x] Visa att man behärskar Node-kraven
 
 # VG-krav
 Lösa 3 av följande krav:
