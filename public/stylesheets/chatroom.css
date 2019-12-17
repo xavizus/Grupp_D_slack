@@ -126,8 +126,7 @@ li {
 
 .edit-buttons, .delete-buttons {
     margin: 5px;
-    margin-right: 20;
-    
+    margin-right: 12px;
     background-color: #5b6068;
     color: white;
     float: right;
