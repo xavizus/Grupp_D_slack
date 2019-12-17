@@ -280,7 +280,8 @@ app.post('/profile/:olduser', async (request, response) => {
     usersCollection.findOne({
         username: request.body.username
     }, (err, data) => {
-        if (data === null) {
+        console.log();
+        if (data === null || data.username == oldUserName) {
             console.log("detta användarnamn kan användas");
             try {
                 let newUserName = request.body.username;
