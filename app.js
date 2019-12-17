@@ -352,7 +352,7 @@ app.get('/chatroom/:room', async function (req, res) {
 
     // Prepare post request to api.
     let dataToSend = {
-        userId: request.session.userId,
+        userId: req.session.userId,
         status: "Online"
     };
 
