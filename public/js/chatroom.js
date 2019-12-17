@@ -103,8 +103,7 @@ $(function () {
             });
 
             let saveButton = $('<button>', {
-                text: 'Save',
-                class: 'btn-info'
+                class: 'far fa-check-circle btnSave'
             });
 
             saveButton.on('click', (event) => {
@@ -119,8 +118,7 @@ $(function () {
             });
 
             let closeButton = $('<button>', {
-                text: 'Close',
-                class: 'btn-danger'
+                class: 'far fa-window-close btnClose'
             });
 
             closeButton.on('click', (event) => {
