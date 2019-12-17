@@ -94,7 +94,7 @@ $(function () {
         });
 
         function edit(event) {
-            let messageDiv = event.currentTarget.previousSibling.previousSibling;
+            let messageDiv = event.currentTarget.nextSibling;
             let oldMessage = messageDiv.innerHTML;
 
             let editArea = $('<textarea>', {
