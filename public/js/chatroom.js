@@ -171,8 +171,8 @@ $(function () {
         } else {
             cssStatus = 'text-secondary';
         }
-        $(`#${userId}`).removeClass();
-        $(`#${userId}`).addClass(cssStatus);
+        $(`.${userId}`).removeClass('text-secondary','text-success');
+        $(`.${userId}`).addClass(cssStatus);
     });
 
 });

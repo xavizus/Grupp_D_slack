@@ -3,10 +3,10 @@
     <% for(let index = 0; index < usersStatuses.length; index++) { %>
         <li class=" <%= (usersStatuses[index].status) == 
         'Online' ? 'text-success' : 'text-secondary' %>">
-            <a id="<%=usersStatuses[index]._id %>" 
+            <a 
                 href="/profile/<%= usersStatuses[index].username %>" 
                 class="<%= (usersStatuses[index].status) == 
-                'Online' ? 'text-success' : 'text-secondary' %>"> 
+                'Online' ? 'text-success' : 'text-secondary' %> <%=usersStatuses[index]._id %>"> 
                 <%= usersStatuses[index].username %> </a>
             </li>
     <% } %>
