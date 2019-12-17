@@ -85,12 +85,12 @@ $(function () {
         });
 
         let chatMessage = $('<div>', {
-            text: message
+            text: message,
+            class : 'messageDiv'
         });
 
         let editButton = $('<button>', {
-            text: 'Edit',
-            class: 'edit-buttons btn-info'
+            class: "far fa-edit edit-buttons"
         });
 
         function edit(event) {
@@ -132,6 +132,7 @@ $(function () {
                 .append(saveButton)
                 .append(closeButton);
 
+
             editButton.off().on('click', (event) => {
                 $(messageDiv).html(oldMessage);
                 editButton.off().on('click', edit);
@@ -141,8 +142,7 @@ $(function () {
         editButton.on('click', edit);
 
         let deleteButton = $('<button>', {
-            text: 'Delete',
-            class: 'delete-buttons btn-danger'
+            class: 'delete-buttons far fa-trash-alt'
         });
 
         deleteButton.on('click', (event) => {
@@ -160,9 +160,10 @@ $(function () {
             messageBox
                 .append(imgContainer)
                 .append(usernameLink)
-                .append(chatMessage)
                 .append(deleteButton)
-                .append(editButton);
+                .append(editButton)
+                .append(chatMessage)
+                ;
             $('#messages').append(messageBox);
         } else {
             messageBox

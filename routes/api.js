@@ -241,7 +241,7 @@ router.post('/updateStatus', (request, response) => {
     });
 });
 
-//Jonas api testing
+//Recieves data from server, returns given info to server.
 router.get('/getProfileData/:userName', (req, res) => {
 
     currentUserName = req.params.userName;
@@ -262,13 +262,11 @@ router.get('/getProfileData/:userName', (req, res) => {
 
     })
 });
-
+//Recieves data from server, returns needed info to show the data needed.
 router.get('/editProfile/:userName', (req, res) => {
     let usernameToEdit = req.params.userName;
     let db = req.db;
     let usersCollection = db.get('users');
-
-    
 
     usersCollection.findOne({
         username: usernameToEdit
@@ -283,7 +281,8 @@ router.get('/editProfile/:userName', (req, res) => {
         }
     });
 });
-
+//Recieves data from server, edits/does nothing and returns something to server.
+//Deos a check if the profileimage was sent aswell, if not, don't do anything with it.
 router.put('/editProfileData/:oldusername', (request, response) => {
     let db = request.db;
     let userTabell = db.get('users');
@@ -309,7 +308,6 @@ router.put('/editProfileData/:oldusername', (request, response) => {
             // If it failed, return error
             response.send("There was a problem adding the information to the database.");
         } else {
-            //profile_pic.mv('./images/' + profile_pic.name);
             response.send({
                 result: "OK"
             });
@@ -317,7 +315,7 @@ router.put('/editProfileData/:oldusername', (request, response) => {
     });
 
 });
-
+//Recieves data from server, returns data deleted from database.
 router.get('/deleteProfile/:userToDelete', (req, res) => {
     let userToDelete = req.params.userToDelete;
     let db = req.db;

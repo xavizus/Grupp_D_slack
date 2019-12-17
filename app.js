@@ -218,7 +218,8 @@ app.post('/newAccount', (request, response) => {
     });
 });
 
-//Send profile info to api and return a value from the database, then check what ejs to show
+//Send profile info to api and return a value from the database, then show ejs depending on data recieved
+//and what sessionrole the user has.
 app.get('/profile/:name', async function (req, res) {
     let sessionUserName = req.session.username;
     let currentUserName = req.params.name;
@@ -256,7 +257,7 @@ app.get('/profile/:name', async function (req, res) {
     }
 })
 
-// GET the data needed to edit the user
+// GET the data needed to edit the user, then send it to the api, will return info of user.
 app.get('/profile/edituser/:username', async (req, res) => {
     let currentUserName = req.params.username;
 
@@ -271,7 +272,8 @@ app.get('/profile/edituser/:username', async (req, res) => {
     }
 });
 
-//POST the data to Edit the users, check if username doesnt exist
+//POST the data to API to edit the users, check if username doesnt exist/exists, 
+// then check if a image is edited.
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
     let usersCollection = db.get('users');  

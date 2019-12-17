@@ -4,6 +4,8 @@
     box-sizing: border-box;
 }
 
+
+/* CSS for chatroom page, also connected to other pages */
 body {
     /*font: 13px Helvetica, Arial;*/
     font-family: 'Roboto', sans-serif;
@@ -53,7 +55,8 @@ li {
 } */
 
 #chat-container {
-    overflow: auto;
+    overflow-y: scroll;
+    word-wrap: break-word;
     height: 70vh;
     background-color: #2f3136;
     color: white;
@@ -119,8 +122,17 @@ li {
 }
 
 .edit-buttons, .delete-buttons {
+    margin: 5px;
+    margin-right: 20;
+    
+    background-color: #5b6068;
+    color: white;
     float: right;
-    margin: 2px;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 2px 3px 3px #888888;
+    
 }
 
 .wow {
