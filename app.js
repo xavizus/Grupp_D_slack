@@ -281,7 +281,7 @@ app.post('/profile/:olduser', async (request, response) => {
         username: request.body.username
     }, (err, data) => {
         console.log();
-        if (data === null || data.username == oldUserName) {
+        if (data === null || data.username == oldUserName || data.username !== "DELETED USER") {
             console.log("detta användarnamn kan användas");
             try {
                 let newUserName = request.body.username;
