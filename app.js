@@ -155,8 +155,7 @@ app.post('/login', async (request, response) => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(dataToSend)
-            });
-
+            }).then(response => response.json());
             // if we did not recive an OK message, respond with error message.
             if (!receivedData.result == "OK") {
                 response.send(receivedData.message);
