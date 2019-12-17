@@ -330,7 +330,7 @@ app.get('/profile/deleteuser/:user', async (request, response) => {
     let result = await fetch(`${apiURL}/deleteProfile/${currentUserName}`)
         .then((response => response.json()));
 
-    if (result.results.length !== 0) {
+    if (result.results.length !== 0 && request.session.userRole !== "admin") {
         request.session.destroy();
         response.redirect('/login');
     } else {
