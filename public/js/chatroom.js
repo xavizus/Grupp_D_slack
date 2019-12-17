@@ -87,7 +87,7 @@ $(function () {
 
         let usernameLink = null;
 
-        if (user != 'DELETED') {
+        if (user != 'DELETED USER') {
             usernameLink = $('<a>', {
                 href: '/profile/' + user,
                 text: user
