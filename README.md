@@ -29,4 +29,4 @@ Lösa 3 av följande krav:
 - [ ] Mentions
 - [x] Uppdatera/radera sina egna chattmeddelanden
 - [x] Indikera vilka som är online (uppkopplad mot servern)
-- [ ] Roller
+- [x] Roller
