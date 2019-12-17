@@ -438,6 +438,7 @@ app.get('/dms/:target', async function (req, res) {
 io.on('connection', function (socket) {
     // does stuff when user connects
     socket.on('user-connected', async function (room, name, socketID, userId) {
+        socket.userName = name;
         socket.userId = userId;
         socket.join(room);
 
@@ -460,7 +461,7 @@ io.on('connection', function (socket) {
             });
         }
 
-        io.emit('status-change', socket.userId, 'Online');
+        io.emit('status-change', socket.userId, socket.userName, 'Online');
     });
 
     // does stuff when user connects to private chat
@@ -496,7 +497,7 @@ io.on('connection', function (socket) {
             });
         }
 
-        io.emit('status-change', socket.userId, 'Online');
+        io.emit('status-change', socket.userId,socket.userName, 'Online');
     });
 
     // add new chat room to database
@@ -643,7 +644,7 @@ io.on('connection', function (socket) {
     // when user is dissconnected
     socket.on('disconnect', () => {
         // emit to everyone that the dissconnected user is offline
-        io.emit('status-change', socket.userId, 'Offline');
+        io.emit('status-change', socket.userId, socket.userName, 'Offline');
 
         let dataToSend = {
             userId: socket.userId,
