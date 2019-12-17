@@ -25,7 +25,7 @@ Trello:
 # VG-krav
 Lösa 3 av följande krav:
 - [x] Profilsida, kunna ladda upp bild
-- [ ] Stöd för emojis
+- [x] Stöd för emojis
 - [ ] Mentions
 - [x] Uppdatera/radera sina egna chattmeddelanden
 - [x] Indikera vilka som är online (uppkopplad mot servern)
