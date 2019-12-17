@@ -237,15 +237,14 @@ app.get('/profile/:name', async function (req, res) {
         } else {
             res.send("user does not exist");
         }
-    }
-     else if (sessionUserName !== currentUserName) {
+    } else if (sessionUserName !== currentUserName) {
         if (result.results.length != 0) {
-            if(sessionUserRole == "admin") {
+            if (sessionUserRole == "admin") {
                 console.log("visa adminview");
                 res.render('./adminView.ejs', {
                     "data": result.results
                 });
-            }else if(sessionUserRole == null || sessionUserRole == "normalUser") {
+            } else if (sessionUserRole == null || sessionUserRole == "normalUser") {
                 console.log("visa visitorprofile");
                 res.render('./visitorProfile.ejs', {
                     "data": result.results
@@ -276,13 +275,13 @@ app.get('/profile/edituser/:username', async (req, res) => {
 // then check if a image is edited.
 app.post('/profile/:olduser', async (request, response) => {
     let db = request.db;
-    let usersCollection = db.get('users');  
+    let usersCollection = db.get('users');
     let oldUserName = request.params.olduser;
 
     usersCollection.findOne({
         username: request.body.username
     }, (err, data) => {
-        if(data === null) {
+        if (data === null) {
             console.log("detta användarnamn kan användas");
             try {
                 let newUserName = request.body.username;
@@ -291,13 +290,13 @@ app.post('/profile/:olduser', async (request, response) => {
                     'username': newUserName,
                     'email': newEmail
                 }
-        
+
                 if (request.files) {
                     let newImageName = request.files.profile_image;
                     newImageName.mv('./public/images/' + newImageName.name);
                     changedData.profilePicturePath = "/images/" + newImageName.name;
                 }
-        
+
                 fetch(`${apiURL}/editProfileData/${oldUserName}`, {
                     method: 'PUT',
                     headers: {
@@ -312,8 +311,8 @@ app.post('/profile/:olduser', async (request, response) => {
                         response.send(result);
                     }
                 });
-        
-        
+
+
             } catch (err) {
                 response.status(500).send(err);
             }
@@ -322,7 +321,7 @@ app.post('/profile/:olduser', async (request, response) => {
             response.redirect('/profile/' + oldUserName);
         }
     });
-    
+
 });
 
 //Send delete info to api and destroy session if it returns with a deleted value
@@ -442,7 +441,7 @@ io.on('connection', function (socket) {
         socket.userId = userId;
         socket.join(room);
 
-        
+
 
         // sends old chatroom messages from database to client
         let oldMessages = await fetch(`${apiURL}/getMessages/${room}`)
@@ -453,12 +452,14 @@ io.on('connection', function (socket) {
             return new Date(a.dateAndTime) - new Date(b.dateAndTime);
         });
 
+        // gets user data for messages
+        let userData = await fetch(`${apiURL}/getUsersData`)
+            .then(response => response.json());
+
         for (doc of oldMessages.results) {
-            await fetch(`${apiURL}/getUser/${doc.userid}`)
-            .then(response => response.json()).then((userData) => {
-                // sends old messages to the user that just connected
-                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id, userData.result.profilePicturePath);
-            });
+            // sends old messages to the user that just connected
+            let user = userData.results.find(item => item._id === doc.userid);
+            io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath);
         }
 
         io.emit('status-change', socket.userId, socket.userName, 'Online');
@@ -468,8 +469,6 @@ io.on('connection', function (socket) {
     socket.on('user-connected-private', async function (target, name, socketID, userId) {
         socket.userId = userId;
         socket.join(userId + target);
-
-
 
         // get old messages sent by user
         let userPrivateMessages = await fetch(`${apiURL}/getPrivateMessages/${userId}/${target}`)
@@ -487,17 +486,18 @@ io.on('connection', function (socket) {
             return new Date(a.dateAndTime) - new Date(b.dateAndTime);
         });
 
+        // gets user data for messages
+        let userData = await fetch(`${apiURL}/getUsersData`)
+            .then(response => response.json())
+
         // sends old messages to the user that just connected
         for (doc of allMessages) {
-            await fetch(`${apiURL}/getUser/${doc.senderID}`)
-            .then(response => response.json()).then((userData) => {
-                // sends old messages to the user that just connected
-                
-                io.to(socketID).emit('chat message', userData.result.username, doc.message, doc._id, userData.result.profilePicturePath);
-            });
+            // sends old messages to the user that just connected
+            let sender = userData.results.find(item => item._id === doc.senderID);
+            io.to(socketID).emit('chat message', sender.username, doc.message, doc._id, sender.profilePicturePath);
         }
 
-        io.emit('status-change', socket.userId,socket.userName, 'Online');
+        io.emit('status-change', socket.userId, socket.userName, 'Online');
     });
 
     // add new chat room to database
@@ -537,8 +537,7 @@ io.on('connection', function (socket) {
 
         let user = await fetch(`${apiURL}/getUser/${data.userid}`)
             .then(response => response.json());
-            //console.log(user);
-            
+
         await fetch(`${apiURL}/addMessage`, {
                 method: 'POST',
                 headers: {
@@ -568,7 +567,7 @@ io.on('connection', function (socket) {
 
         let sender = await fetch(`${apiURL}/getUser/${data.userid}`)
             .then(response => response.json());
-            console.log(sender.result.username)
+        console.log(sender.result.username)
 
         await fetch(`${apiURL}/addPrivateMessage`, {
                 method: 'POST',

@@ -117,7 +117,7 @@ router.post('/addUser', (request, response) => {
         "email": request.body.email,
         "password": request.body.password,
         "profilePicturePath": "/images/default.png",
-        "userRole" : "normalUser"
+        "userRole": "normalUser"
     }, (error, result) => {
         if (error) {
             response.send({
@@ -549,6 +549,29 @@ router.get('/getUser/:userID', (req, res) => {
             let responseObject = {
                 response: "OK",
                 result: data
+            };
+            res.send(responseObject);
+        }
+    });
+});
+
+// returns user data
+router.get('/getUsersData', (req, res) => {
+    let db = req.db;
+
+    db.get('users').find({}, {
+        projection: {
+            _id: 1,
+            username: 1,
+            profilePicturePath: 1
+        }
+    }, (err, data) => {
+        if (err) {
+            throw err;
+        } else {
+            let responseObject = {
+                response: "OK",
+                results: data
             };
             res.send(responseObject);
         }
