@@ -1,6 +1,19 @@
 $(function () {
     var socket = io();
-    console.log(target);
+
+    // emoji button
+    const button = document.querySelector('#emoji-button');
+    const picker = new EmojiButton({
+        position: 'top-end'
+    });
+
+    picker.on('emoji', emoji => {
+        document.querySelector('#m').value += emoji;
+    });
+
+    button.addEventListener('click', () => {
+        picker.pickerVisible ? picker.hidePicker() : picker.showPicker(button);
+    });
 
     // when user connects
     socket.on('connect', () => {
@@ -171,7 +184,7 @@ $(function () {
         } else {
             cssStatus = 'text-secondary';
         }
-        $(`.${userId}`).removeClass('text-secondary','text-success');
+        $(`.${userId}`).removeClass('text-secondary', 'text-success');
         $(`.${userId}`).addClass(cssStatus);
     });
 

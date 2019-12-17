@@ -30,7 +30,7 @@ body {
     padding: 20px;
 }
 
-#sendMessage button {
+#sendMessage #submitButton {
     width: 14%;
     border: none;
    
@@ -165,4 +165,9 @@ li {
     border-radius: 40%;
 }
 
-
+#emoji-button {
+    background-color: transparent;
+    border: none;
+    margin-left: -50px;
+    margin-right: 18px;
+}

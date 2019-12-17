@@ -59,7 +59,9 @@
                    
                 </div>
                 <form id="sendMessage" action="" class="form-group row center">
-                     <input id="m" autocomplete="off" class="form-control" placeholder="Message here..."><button class="btn-secondary form-control">Send</button> 
+                     <input id="m" autocomplete="off" class="form-control" placeholder="Message here...">
+                     <button id="emoji-button" type="button"><img src="/icons/smiley.png"></button>
+                     <button id="submitButton" class="btn-secondary form-control" type="submit">Send</button> 
                 </form>
             </div>
         
@@ -69,6 +71,7 @@
             </div>
         </div>
     </div>
+    <script src="/js/@joeattardi_emoji-button.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script src="/js/chatroom.js"></script>
