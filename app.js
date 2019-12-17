@@ -140,7 +140,6 @@ app.post('/login', async (request, response) => {
             request.session.username = userInfoData.result.username;
             request.session.userId = userInfoData.result._id;
             request.session.userRole = userInfoData.result.userRole;
-            console.log(request.session.userRole);
 
             // Prepare post request to api.
             let dataToSend = {
@@ -380,7 +379,6 @@ app.get('/chatroom/:room', async function (req, res) {
         // get list of all chat rooms
         let chatRoomList = await fetch(`${apiURL}/getAllChatRooms`)
             .then(response => response.json());
-        console.log(req.session.userId)
 
         // render the page
         res.render('chatroom', {
@@ -412,7 +410,6 @@ app.get('/dms/:target', async function (req, res) {
     // check if user (/:target) exists
     let user = await fetch(`${apiURL}/findUser/${req.params.target}`)
         .then(response => response.json());
-    console.log(user.result._id);
 
     if (user.result == null) {
         return res.redirect('/chatroom/General');
@@ -437,7 +434,6 @@ app.get('/dms/:target', async function (req, res) {
 io.on('connection', function (socket) {
     // does stuff when user connects
     socket.on('user-connected', async function (room, name, socketID, userId) {
-        socket.userName = name;
         socket.userId = userId;
         socket.join(room);
 
@@ -459,7 +455,7 @@ io.on('connection', function (socket) {
         for (doc of oldMessages.results) {
             // sends old messages to the user that just connected
             let user = userData.results.find(item => item._id === doc.userid);
-            io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath);
+            io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath, doc.dateAndTime);
         }
 
         io.emit('status-change', socket.userId, 'Online');
@@ -494,7 +490,7 @@ io.on('connection', function (socket) {
         for (doc of allMessages) {
             // sends old messages to the user that just connected
             let sender = userData.results.find(item => item._id === doc.senderID);
-            io.to(socketID).emit('chat message', sender.username, doc.message, doc._id, sender.profilePicturePath);
+            io.to(socketID).emit('chat message', sender.username, doc.message, doc._id, sender.profilePicturePath, doc.dateAndTime);
         }
 
         io.emit('status-change', socket.userId, 'Online');
@@ -548,7 +544,7 @@ io.on('connection', function (socket) {
             .then(response => response.json()).then(data => {
                 if (data.response == "OK") {
                     let messageObj = data.result;
-                    io.in(room).emit('chat message', user.result.username, messageObj.message, messageObj._id, user.result.profilePicturePath);
+                    io.in(room).emit('chat message', user.result.username, messageObj.message, messageObj._id, user.result.profilePicturePath, messageObj.dateAndTime);
                 } else {
                     console.log('Something went wrong');
                 }
@@ -567,7 +563,6 @@ io.on('connection', function (socket) {
 
         let sender = await fetch(`${apiURL}/getUser/${data.userid}`)
             .then(response => response.json());
-        console.log(sender.result.username)
 
         await fetch(`${apiURL}/addPrivateMessage`, {
                 method: 'POST',

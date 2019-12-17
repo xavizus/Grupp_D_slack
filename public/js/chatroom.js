@@ -63,7 +63,13 @@ $(function () {
     });
 
     // receives message from server and prints it in the chat
-    socket.on('chat message', function (user, message, messageID, picturePath) {
+    socket.on('chat message', function (user, message, messageID, picturePath, dateAndTime) {
+        let date = new Date(dateAndTime).toLocaleDateString('sv')
+        let time = new Date(dateAndTime).toLocaleTimeString('sv', {
+            hour: '2-digit',
+            minute: '2-digit'
+        })
+
         let messageBox = $('<li>', {
             id: messageID
         });
@@ -82,6 +88,11 @@ $(function () {
         let usernameLink = $('<a>', {
             href: '/profile/' + user,
             text: user
+        });
+
+        let messageDate = $('<span>', {
+            text: ' ' + date + ' ' + time,
+            class: 'messageDate'
         });
 
         let chatMessage = $('<div>', {
@@ -160,6 +171,7 @@ $(function () {
             messageBox
                 .append(imgContainer)
                 .append(usernameLink)
+                .append(messageDate)
                 .append(deleteButton)
                 .append(editButton)
                 .append(chatMessage)
@@ -169,6 +181,7 @@ $(function () {
             messageBox
                 .append(imgContainer)
                 .append(usernameLink)
+                .append(messageDate)
                 .append(chatMessage);
             $('#messages').append(messageBox);
         }
