@@ -85,10 +85,18 @@ $(function () {
         });
         imgContainer.append(profilePic)
 
-        let usernameLink = $('<a>', {
-            href: '/profile/' + user,
-            text: user
-        });
+        let usernameLink = null;
+
+        if (user != 'DELETED') {
+            usernameLink = $('<a>', {
+                href: '/profile/' + user,
+                text: user
+            });
+        } else {
+            usernameLink = $('<span>', {
+                text: user
+            });
+        }
 
         let messageDate = $('<span>', {
             text: ' ' + date + ' ' + time,

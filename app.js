@@ -455,7 +455,12 @@ io.on('connection', function (socket) {
         for (doc of oldMessages.results) {
             // sends old messages to the user that just connected
             let user = userData.results.find(item => item._id === doc.userid);
-            io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath, doc.dateAndTime);
+            if (user != undefined) {
+                io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath, doc.dateAndTime);
+
+            } else {
+                io.to(socketID).emit('chat message', 'DELETED', doc.message, doc._id, '/images/default.png', doc.dateAndTime);
+            }
         }
 
         io.emit('status-change', socket.userId, 'Online');
