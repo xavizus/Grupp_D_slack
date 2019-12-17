@@ -177,16 +177,21 @@ $(function () {
     });
 
     // Update statuses for users
-    socket.on('status-change', (userId, status) => {
+    socket.on('status-change', (userId, userName, status) => {
         console.log(`UserID: ${userId} changed status to: ${status}`);
         let cssStatus = '';
+        let message = ''
         if (status == 'Online') {
             cssStatus = 'text-success';
+            message = `User <span class="font-weight-bolder underline">${userName}</span> has connected!`;
         } else {
             cssStatus = 'text-secondary';
+            message = `User <span class="font-weight-bolder underline">${userName}</span> has disconnected!`;
         }
         $(`.${userId}`).removeClass('text-secondary', 'text-success');
         $(`.${userId}`).addClass(cssStatus);
+
+        $('#messages').append(`<li>${message}</li> <hr class="test">`);
     });
 
 });
