@@ -357,17 +357,13 @@ app.get('/chatroom/:room', async function (req, res) {
     };
 
     // update the status for the user that just logged in.
-    let receivedData = await fetch(`${apiURL}/updateStatus`, {
+    fetch(`${apiURL}/updateStatus`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify(dataToSend)
     }).then(response => response.json());
-    // if we did not recive an OK message, respond with error message.
-    if (!receivedData.result == "OK") {
-        response.send(receivedData.message);
-    }
 
     // Get all current status.
     let allUsersStatuses = await fetch(`${apiURL}/status`)
