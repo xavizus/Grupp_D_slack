@@ -115,6 +115,7 @@ $(function () {
                 }
 
                 $(messageDiv).html(editArea.val());
+                editButton.off().on('click', edit);
             });
 
             let closeButton = $('<button>', {
@@ -124,6 +125,7 @@ $(function () {
 
             closeButton.on('click', (event) => {
                 $(messageDiv).html(oldMessage);
+                editButton.off().on('click', edit);
             });
 
             $(messageDiv).empty();
