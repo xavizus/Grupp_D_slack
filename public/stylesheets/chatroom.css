@@ -55,7 +55,8 @@ li {
 } */
 
 #chat-container {
-    overflow: auto;
+    overflow-y: scroll;
+    word-wrap: break-word;
     height: 70vh;
     background-color: #2f3136;
     color: white;
@@ -120,9 +121,15 @@ li {
     border: 1px #42454a solid;
 }
 
+.messageDiv {
+   
+}
 .edit-buttons, .delete-buttons {
-    float: right;
     margin: 2px;
+    padding: 5px;
+    background-color: #42454a;
+    color: white;
+    float: right;
 }
 
 .wow {
