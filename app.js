@@ -577,10 +577,10 @@ io.on('connection', function (socket) {
 
                     // sends message to client
                     if (data.userid == target) {
-                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath);
+                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath, msgObj.dateAndTime);
                     } else {
-                        io.in(target + data.userid).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath);
-                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath);
+                        io.in(target + data.userid).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath, msgObj.dateAndTime);
+                        io.in(data.userid + target).emit('chat message', sender.result.username, msgObj.message, msgObj._id, sender.result.profilePicturePath, msgObj.dateAndTime);
                     }
                 } else {
                     console.log('Something went wrong');
