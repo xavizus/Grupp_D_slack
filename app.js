@@ -462,7 +462,7 @@ io.on('connection', function (socket) {
             io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath);
         }
 
-        io.emit('status-change', socket.userId, socket.userName, 'Online');
+        io.emit('status-change', socket.userId, 'Online');
     });
 
     // does stuff when user connects to private chat
@@ -497,7 +497,7 @@ io.on('connection', function (socket) {
             io.to(socketID).emit('chat message', sender.username, doc.message, doc._id, sender.profilePicturePath);
         }
 
-        io.emit('status-change', socket.userId, socket.userName, 'Online');
+        io.emit('status-change', socket.userId, 'Online');
     });
 
     // add new chat room to database
@@ -643,7 +643,7 @@ io.on('connection', function (socket) {
     // when user is dissconnected
     socket.on('disconnect', () => {
         // emit to everyone that the dissconnected user is offline
-        io.emit('status-change', socket.userId, socket.userName, 'Offline');
+        io.emit('status-change', socket.userId, 'Offline');
 
         let dataToSend = {
             userId: socket.userId,
