@@ -77,7 +77,6 @@ $(function () {
         });
 
         let editButton = $('<button>', {
-            text: 'Edit',
             class: "far fa-edit edit-buttons"
         });
 
@@ -130,7 +129,6 @@ $(function () {
         editButton.on('click', edit);
 
         let deleteButton = $('<button>', {
-            text: 'Delete',
             class: 'delete-buttons far fa-trash-alt'
         });
 
