@@ -459,7 +459,7 @@ io.on('connection', function (socket) {
                 io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath, doc.dateAndTime);
 
             } else {
-                io.to(socketID).emit('chat message', 'DELETED', doc.message, doc._id, '/images/default.png', doc.dateAndTime);
+                io.to(socketID).emit('chat message', 'DELETED USER', doc.message, doc._id, '/images/default.png', doc.dateAndTime);
             }
         }
 
@@ -495,7 +495,11 @@ io.on('connection', function (socket) {
         for (doc of allMessages) {
             // sends old messages to the user that just connected
             let sender = userData.results.find(item => item._id === doc.senderID);
-            io.to(socketID).emit('chat message', sender.username, doc.message, doc._id, sender.profilePicturePath, doc.dateAndTime);
+            if (sender != undefined) {
+                io.to(socketID).emit('chat message', sender.username, doc.message, doc._id, sender.profilePicturePath, doc.dateAndTime);
+            } else {
+                io.to(socketID).emit('chat message', 'DELETED USER', doc.message, doc._id, sender.profilePicturePath, '/images/default.png');
+            }
         }
 
         io.emit('status-change', socket.userId, 'Online');
