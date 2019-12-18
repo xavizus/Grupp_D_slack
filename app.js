@@ -283,8 +283,7 @@ app.post('/profile/:olduser', async (request, response) => {
     usersCollection.findOne({
         username: request.body.username
     }, (err, data) => {
-        console.log();
-        if (data === null || data.username == oldUserName || data.username !== "DELETED USER") {
+        if (data === null && request.body.username != "DELETED USER" || data != null && data.username == oldUserName) {
             console.log("detta användarnamn kan användas");
             try {
                 let newUserName = request.body.username;
