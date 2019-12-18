@@ -3,6 +3,9 @@ An backend assignment for building a slack-clone
 
 Trello:
     https://trello.com/b/eYBYhoAi/grupp-d-tavla
+    
+Live App:
+    http://xav-p-docker.xavizus.com:1020
 
 # Node-krav
 - [x] Kunna sätta upp en server
