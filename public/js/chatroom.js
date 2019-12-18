@@ -70,6 +70,7 @@ $(function () {
             minute: '2-digit'
         })
 
+        // creates message container
         let messageBox = $('<li>', {
             id: messageID
         });

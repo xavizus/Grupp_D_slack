@@ -342,11 +342,12 @@ app.get('/profile/deleteuser/:user', async (request, response) => {
 
 
 
-// Chatroom
+// get chat room page
 app.get('/chatroom', function (req, res) {
     res.redirect('chatroom/General');
 });
 
+// get specific chat room page
 app.get('/chatroom/:room', async function (req, res) {
     // checks if user is authenticated
     if (!req.session.authenticated) {
@@ -395,11 +396,12 @@ app.get('/chatroom/:room', async function (req, res) {
     }
 });
 
-// Direct messages
+// get direct messages page
 app.get('/dms', function (req, res) {
     res.redirect('chatroom/General');
 });
 
+// get specific direct messages page
 app.get('/dms/:target', async function (req, res) {
     // checks if user is authenticated
     if (!req.session.authenticated) {
@@ -440,8 +442,6 @@ io.on('connection', function (socket) {
         socket.userId = userId;
         socket.join(room);
 
-
-
         // sends old chatroom messages from database to client
         let oldMessages = await fetch(`${apiURL}/getMessages/${room}`)
             .then(response => response.json());
@@ -460,7 +460,6 @@ io.on('connection', function (socket) {
             let user = userData.results.find(item => item._id === doc.userid);
             if (user != undefined) {
                 io.to(socketID).emit('chat message', user.username, doc.message, doc._id, user.profilePicturePath, doc.dateAndTime);
-
             } else {
                 io.to(socketID).emit('chat message', 'DELETED USER', doc.message, doc._id, '/images/default.png', doc.dateAndTime);
             }
@@ -536,6 +535,7 @@ io.on('connection', function (socket) {
 
     // receives message data from client
     socket.on('chat message', async function (room, data) {
+        // creates message object
         let messageObject = {
             userid: data.userid,
             chatroomid: room,
@@ -543,9 +543,11 @@ io.on('connection', function (socket) {
             message: data.message
         }
 
+        // gets user info
         let user = await fetch(`${apiURL}/getUser/${data.userid}`)
             .then(response => response.json());
 
+        // post message to database
         await fetch(`${apiURL}/addMessage`, {
                 method: 'POST',
                 headers: {
@@ -556,6 +558,7 @@ io.on('connection', function (socket) {
             .then(response => response.json()).then(data => {
                 if (data.response == "OK") {
                     let messageObj = data.result;
+                    // send message to client
                     io.in(room).emit('chat message', user.result.username, messageObj.message, messageObj._id, user.result.profilePicturePath, messageObj.dateAndTime);
                 } else {
                     console.log('Something went wrong');
@@ -565,7 +568,7 @@ io.on('connection', function (socket) {
 
     // receives private message from client
     socket.on('private message', async function (target, data) {
-
+        // creates message object
         let messageObject = {
             senderID: data.userid,
             receiverID: target,
@@ -573,9 +576,11 @@ io.on('connection', function (socket) {
             message: data.message
         }
 
+        // gets user info
         let sender = await fetch(`${apiURL}/getUser/${data.userid}`)
             .then(response => response.json());
 
+        // post message to database
         await fetch(`${apiURL}/addPrivateMessage`, {
                 method: 'POST',
                 headers: {
@@ -602,12 +607,14 @@ io.on('connection', function (socket) {
 
     // edit message
     socket.on('edit-message', async (message, messageID, messageType) => {
+        // create message object
         let messageObject = {
             _id: messageID,
             message: message,
             messageType: messageType
         }
 
+        // send updated data to database
         await fetch(`${apiURL}/editMessage`, {
                 method: 'PUT',
                 headers: {
@@ -631,6 +638,7 @@ io.on('connection', function (socket) {
             messageType: messageType
         }
 
+        // sends delete request to database
         await fetch(`${apiURL}/deleteMessage`, {
                 method: 'DELETE',
                 headers: {

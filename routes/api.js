@@ -519,7 +519,7 @@ router.put('/editMessage', (req, res) => {
     });
 });
 
-// delete messages
+// delete message
 router.delete('/deleteMessage', (req, res) => {
     let db = req.db;
 
@@ -537,6 +537,7 @@ router.delete('/deleteMessage', (req, res) => {
     });
 });
 
+// get user info
 router.get('/getUser/:userID', (req, res) => {
     let db = req.db;
 
@@ -555,7 +556,7 @@ router.get('/getUser/:userID', (req, res) => {
     });
 });
 
-// returns user data
+// returns user data from all users
 router.get('/getUsersData', (req, res) => {
     let db = req.db;
 

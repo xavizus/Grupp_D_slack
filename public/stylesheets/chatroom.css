@@ -4,10 +4,8 @@
     box-sizing: border-box;
 }
 
-
 /* CSS for chatroom page, also connected to other pages */
 body {
-    /*font: 13px Helvetica, Arial;*/
     font-family: 'Roboto', sans-serif;
 }
 
@@ -47,9 +45,6 @@ body {
 li {
     padding: 1px;
 }
-/* #messages li:nth-child(odd) {
-    background: #eee;
-} */
 
 #chat-container {
     overflow-y: scroll;
