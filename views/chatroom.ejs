@@ -50,7 +50,12 @@
                     </div>
             </div>
             <div id="around-chat" class="col-sm-8">
+                    <% if(!roomName) { %>
+                        <h1> Private ChatRoom </h1>
+                   <% } else { %> 
                     <h1><%= roomName %></h1>
+                   <% } %> 
+               
                 <div id="chat-container">
                     
                     <ul id="messages">
