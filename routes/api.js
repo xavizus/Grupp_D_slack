@@ -298,7 +298,6 @@ router.put('/editProfileData/:oldusername', (request, response) => {
         dataToChange.profilePicturePath = newProfilePicturePath;
     }
 
-    console.log(dataToChange);
     userTabell.update({
         'username': request.params.oldusername
     }, {
