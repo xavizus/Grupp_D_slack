@@ -188,7 +188,7 @@ app.post('/newAccount', (request, response) => {
     let password = request.body.password;
 
     if (username == "DELETED USER") {
-        response.redirect('/login' + '/?errorMSG=DELETED USER is not allowed!');
+        return response.redirect('/login' + '/?errorMSG=DELETED USER is not allowed!');
     }
     // Prepare post request
     let data = {
