@@ -6,6 +6,11 @@ Trello:
     
 Live App:
     http://xav-p-docker.xavizus.com:1020
+    
+# Developers
+- [Rickard Pedersen](https://github.com/RickardPedersen)
+- [Jonas Gertz](https://github.com/ztreg)
+- [Stephan Ljungros](https://github.com/xavizus)
 
 # Node-krav
 - [x] Kunna sätta upp en server
